@@ -4,10 +4,10 @@ with open("README.md","r") as f :
     description = f.read()
 
 setup(
-    name="medify",
-    version="0.1",
+    name="newberryai",
+    version="0.1.0",
     author="saurabh",
-    author_email="saurabh.patil@holbox.ai",
+    author_email="",
     description="A package for medical scribing using AWS Transcribe for the healthcare domain",
     packages=find_packages(),
     install_requires=[
@@ -16,7 +16,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "healthscribe-cli=medify.cli:main"
+            "healthscribe-cli=newberryai.cli:main"
         ]
     },
     long_description=description,

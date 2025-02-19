@@ -9,7 +9,7 @@ HealthScribe is a package focused on the healthcare domain. It enables medical s
 ## Installation
 
 ```sh
- pip install medify
+ pip install newberryai
 ```
 ## Usage
 
@@ -28,7 +28,7 @@ healthscribe-cli conversation.wav myJob arn:aws:iam::aws_accountid:role/your-rol
 You can use this in python script: 
 ```sh 
 import os
-import medify
+import newberryai
 
 # Set the environment variables for the AWS SDK
 os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
@@ -36,7 +36,7 @@ os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
 os.environ['AWS_REGION'] = aws_region
 
 # Call the function with sensitive information masked
-summary = medify.healthscribe(
+summary = newberryai.healthscribe(
     audio_file="/path/to/audio.mp3",
     job_name="job_name",
     data_access_role_arn="arn:aws:iam::accountid:role/your-role",
