@@ -86,7 +86,7 @@ def analyze_frames_with_claude(frame_paths, prompt, max_retries=3):
 
             # Call Claude via Bedrock
             response = bedrock_client.invoke_model(
-                modelId="arn:aws:bedrock:us-east-2:535002855311:inference-profile/us.anthropic.claude-3-5-sonnet-20240620-v1:0",
+                modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
                 body=json.dumps({
                     "messages": messages,
                     "max_tokens": 1000,
