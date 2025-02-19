@@ -12,7 +12,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "boto3",
-        "requests"
+        "requests",
+        "opencv-python",
     ],
     entry_points={
         "console_scripts": [
