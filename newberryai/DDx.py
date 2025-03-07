@@ -119,37 +119,66 @@ class DDxChat:
     def start_gradio(self):
         self.assistant.launch_gradio(
                 title="Differential Diagnosis AI Assistant",
-                description="Ask about differential diagnoses, diagnostic approaches, or distinguishing features between conditions."
+                description="Ask about differential diagnoses, diagnostic approaches, or distinguishing features between conditions.",
+                input_text_label="Enter clinical scenario or medical question",
+                input_image_label=None,  # Remove image input option
+                output_label="Differential Diagnosis Analysis"
             )
 
     def run_cli(self):
-        self.assistant.run_cli()
+        """Run an interactive command-line interface"""
+        print("DDx Assistant initialized")
+        print("Type 'exit' or 'quit' to end the conversation.")
+        
+        while True:
+            user_input = input("\nYou: ")
+            if user_input.lower() in ["exit", "quit"]:
+                print("Goodbye!")
+                break
+            
+            # Process text input only
+            print("\nDDx Assistant: ", end="")
+            answer = self.ask(user_input)
+            print(answer)
 
-    def ask(self,que):
-        return self.assistant.ask(que)
+    def ask(self, question):
+        """
+        Ask a question to the DDx assistant.
+        
+        Args:
+            question (str): The question to process
+            
+        Returns:
+            str: The assistant's response
+        """
+        # Enforce text-only input
+        if not isinstance(question, str):
+            return "Error: This DDx assistant only accepts text questions."
+        
+        # Use the ChatQA ask method with only the question parameter (no image)
+        return self.assistant.ask(question=question, image_path=None)
 
 
 def DDx_CLI():
-    parser = argparse.ArgumentParser(description="AI Assistant CLI Tool")
+    """Command-line interface for the DDx Assistant"""
+    parser = argparse.ArgumentParser(description="DDx AI Assistant")
 
-    parser.add_argument("--question", "-q", type=str, help="Question to ask Chatbot")
-
+    parser.add_argument("--question", "-q", type=str, help="Clinical question for the DDx Assistant")
     parser.add_argument("--gradio", "-g", action="store_true", 
-                        help="Launch Gradio interface instead of CLI")
+                        help="Launch Gradio interface")
     parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
+    
     args = parser.parse_args()
     
-    # assistant = ChatQA(system_prompt=Sys_Prompt)
     ddx_chat = DDxChat()
+    
     if args.gradio:
-        print(f"Launching Gradio interface DDx")
+        print("Launching Gradio interface for DDx Assistant")
         ddx_chat.start_gradio()
-
     elif args.interactive:
-        print("Starting interactive mode. Type 'exit' or 'quit' to end.")
+        print("Starting interactive session for DDx Assistant")
         ddx_chat.run_cli()
-
     elif args.question:
         print(f"Question: {args.question}\n")
         response = ddx_chat.ask(args.question)
@@ -158,7 +187,6 @@ def DDx_CLI():
     else:
         parser.print_help()
         sys.exit(1)
-
 
 
 if __name__ == "__main__":
