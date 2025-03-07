@@ -80,8 +80,7 @@ For a given patient presentation, organize your response in this format:
 2. **Differential Diagnosis**: List of potential diagnoses organized by likelihood or category
 3. **Discussion of Top Considerations**: Detailed reasoning for the most likely or critical diagnoses
 4. **Suggested Diagnostic Approach**: Recommended workup with rationale
-5. **Clinical Pearls/Decision Points**: Key distinguishing features or clinical insights
-6. **Disclaimer**: Reminder about the limitations of AI assistance and importance of clinical judgment
+5. **Disclaimer**: Reminder about the limitations of AI assistance and importance of clinical judgment
 
 ## Disclaimers
 

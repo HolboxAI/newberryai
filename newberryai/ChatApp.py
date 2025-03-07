@@ -25,6 +25,7 @@ class ChatQA:
         # aws_secret_access_key: Optional[str] = None,
         model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0",
         max_tokens: int = 1000
+
     ):
         """
         Initialize the AI Assistant.
@@ -68,6 +69,7 @@ class ChatQA:
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": self.max_tokens,
             "system": self.system_prompt,
+            "temperature":0.0,
             "messages": [
                 {
                     "role": "user",
@@ -85,7 +87,8 @@ class ChatQA:
             response = self.runtime.invoke_model(
                 modelId=self.model_id,
                 contentType='application/json',
-                body=body
+                body=body,
+                
             )
             
             response_body = json.loads(response['body'].read())
