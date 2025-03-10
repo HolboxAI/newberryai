@@ -6,9 +6,9 @@ with open("README.md","r") as f :
 setup(
     name="newberryai",
     version="0.1.0",
-    author="saurabh",
+    author="",
     author_email="",
-    description="A package for medical scribing using AWS Transcribe for the healthcare domain",
+    description="",
     packages=find_packages(),
     install_requires=[
         "boto3",
@@ -17,7 +17,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "healthscribe-cli=newberryai.cli:main"
+            "newberryai=newberryai.cli:main",
         ]
     },
     long_description=description,

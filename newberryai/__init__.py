@@ -1,2 +1,2 @@
-from .transcribe import healthscribe
-from .compliance import check_compliance  
+from .healthscribe import HealthScribe
+from .health_compliance import ComplianceChecker  
