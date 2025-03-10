@@ -35,15 +35,42 @@ os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
 os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
 os.environ['AWS_REGION'] = aws_region
 
-# Call the function with sensitive information masked
+# Healthscribe Functionality (Medical Transcription using AWS Healthscribe)
+
+# Set the path to the audio file and other required parameters
+audio_file = "/path/to/audio.mp3"  
+job_name = "job_name" 
+data_access_role_arn = "arn:aws:iam::accountid:role/your-role"  
+s3_bucket = "s3_bucket"  
+
+# Call the Healthscribe function
 summary = newberryai.healthscribe(
-    audio_file="/path/to/audio.mp3",
-    job_name="job_name",
-    data_access_role_arn="arn:aws:iam::accountid:role/your-role",
-    s3_bucket="s3_bucket"
+    audio_file=audio_file,
+    job_name=job_name,
+    data_access_role_arn=data_access_role_arn,
+    s3_bucket=s3_bucket
 )
 
+print("Healthscribe Summary:")
 print(summary)
+
+# Compliance Checker Functionality (Compliance Check on a Video File)
+
+# Set your video file path and compliance question
+video_file = "/path/to/video.mp4"  
+compliance_question = "Is the video compliant with safety regulations such as mask?" 
+
+# Call the compliance-checker function
+result = newberryai.check_compliance(
+    video_file=video_file,
+    prompt=compliance_question
+)
+
+# Print the compliance check result
+print("Compliance Check Result:")
+print(f"Analysis: {result['analysis']}")
+print(f"Compliant: {result['compliant']}")
+
 ```
 
 
