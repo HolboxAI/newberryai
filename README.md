@@ -1,6 +1,5 @@
 # NewberryAI Medical Tools
 
-An AWS-powered toolkit for medical professionals and healthcare organizations that provides compliance analysis, medical transcription, differential diagnosis assistance, and medical bill extraction.
 
 ## Features
 
