@@ -13,7 +13,9 @@ setup(
     install_requires=[
         "boto3",
         "requests",
+        "pytest",
         "opencv-python",
+        "gradio"
     ],
     entry_points={
         "console_scripts": [

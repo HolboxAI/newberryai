@@ -1,1 +1,5 @@
 test.py
+.gradio/
+newberryai.egg-info/
+newberryai/__pycache__/
+package_test/
