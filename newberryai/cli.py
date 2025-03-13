@@ -4,6 +4,7 @@ from newberryai import ComplianceChecker
 from newberryai import HealthScribe
 from newberryai import DDxChat
 from newberryai import Bill_extractor
+from newberryai import RealtimeApp
 import os 
 
 def compliance_command(args):
@@ -59,6 +60,12 @@ def differential_diagnosis_command(args):
         print("Check the argument via --help")
 
 
+def speech_to_speech_command(args):
+    """Handle the speech-to-speech subcommand."""
+    print("Launching Speech-to-Speech Assistant...")
+    app = RealtimeApp()
+    app.run()
+    
 
 def medical_bill_extractor_command(args):
     extract_bill = Bill_extractor()
@@ -127,6 +134,11 @@ def main():
                         help="Run in interactive CLI mode")
     medical_bill_extractor_parser.set_defaults(func=medical_bill_extractor_command)
 
+    # Speech to speech
+    speech_to_speech_parser = subparsers.add_parser('speech_to_speech', help='Launch real-time Speech-to-Speech Assistant')
+    speech_to_speech_parser.set_defaults(func=speech_to_speech_command)
+    
+    
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
     args.func(args)
