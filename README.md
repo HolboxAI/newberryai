@@ -7,6 +7,7 @@
 - **HealthScribe**: Medical transcription using AWS HealthScribe
 - **Differential Diagnosis (DDx) Assistant**: Get assistance with clinical diagnosis
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
+- **Speech to speech assistant**: Real-time voice interaction assistant
 
 ## Installation
 
@@ -31,6 +32,7 @@ Available commands:
 - `healthscribe` - Transcribe medical conversations
 - `ddx` - Get differential diagnosis assistance
 - `bill_extract` - Extract and analyze medical bill data
+- `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
 
 #### Compliance Checker
 
@@ -73,6 +75,13 @@ newberryai bill_extract --interactive
 
 # Launch Gradio web interface
 newberryai bill_extract --gradio
+```
+
+#### Speech to Speech Assitant
+
+```sh
+# Launch the real-time speech-to-speech application
+newberryai speech_to_speech
 ```
 
 ### Python Module
@@ -169,6 +178,34 @@ print(analysis)
 # extractor.start_gradio()
 ```
 
+
+#### Speech-to-Speech Assistant
+```python
+from newberryai import RealtimeApp
+
+# Initialize and run the speech-to-speech assistant
+app = RealtimeApp()
+app.run()
+```
+
+
+
+
+
+
+
+
+
+
+#### Troubleshooting: SSL Certificate Issues
+If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
+```sh
+pip install --upgrade certifi
+export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
+```
+This ensures that your system is using the latest SSL certificates.
+
+
 ## Requirements
 
 - Python 3.8+
@@ -177,6 +214,8 @@ print(analysis)
   - Amazon S3
   - AWS HealthScribe
   - AWS IAM
+- For Speech-to-Speech:
+  - OpenAI API key (set as OPENAI_API_KEY in your environment)
 
 ## AWS Configuration
 
