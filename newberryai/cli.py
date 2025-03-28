@@ -4,6 +4,7 @@ from newberryai import ComplianceChecker
 from newberryai import HealthScribe
 from newberryai import DDxChat
 from newberryai import Bill_extractor
+from newberryai import ExcelExp
 import os 
 
 def compliance_command(args):
@@ -53,6 +54,23 @@ def differential_diagnosis_command(args):
     elif args.clinical_indication:
         print(f"Question: {args.clinical_indication}\n")
         response = ddx_chat.ask(args.clinical_indication)
+        print("Response:")
+        print(response)
+    else: 
+        print("Check the argument via --help")
+
+def excel_formula_command(args):
+    Excelo_chat = ExcelExp()
+    
+    if args.gradio:
+        print("Launching Gradio interface for AI Assistant")
+        Excelo_chat.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for AI Assistant")
+        Excelo_chat.run_cli()
+    elif args.Excel_query:
+        print(f"Question: {args.Excel_query}\n")
+        response = Excelo_chat.ask(args.Excel_query)
         print("Response:")
         print(response)
     else: 
@@ -118,6 +136,15 @@ def main():
                         help="Run in interactive CLI mode")
     differential_diagnosis_parser.set_defaults(func=differential_diagnosis_command)
 
+    # Excel Formula Generator Command 
+    Excelo_parser = subparsers.add_parser('ExcelO', help='Ask Excel Formula for your spreadsheet')
+    Excelo_parser.add_argument("--Excel_query", "-Eq", type=str, help="Your Excel Query for AI Assistant")
+    Excelo_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    Excelo_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    Excelo_parser.set_defaults(func=differential_diagnosis_command)
+
     # Medical Bill Extractor Command 
     medical_bill_extractor_parser = subparsers.add_parser('bill_extract', help='Extract metadata from medical bills')
     medical_bill_extractor_parser.add_argument("--image_path", "-img", type=str, help="Path to a document image to analyze")
@@ -129,8 +156,9 @@ def main():
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
-    args.func(args)
+    result = healthscribe(args.audio_file,args.job_name,args.data_access_role_arn, args.s3_bucket, args.s3_key)
+    print(result)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

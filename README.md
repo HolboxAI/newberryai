@@ -1,26 +1,23 @@
-# NewberryAI Medical Tools
+# NewberryAI
 
+A Python package for medical scribing using AWS Transcribe Medical service.
 
-## Features
+## Overview
 
 - **Compliance Checker**: Analyze videos for regulatory compliance
 - **HealthScribe**: Medical transcription using AWS HealthScribe
 - **Differential Diagnosis (DDx) Assistant**: Get assistance with clinical diagnosis
+- **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
 
 ## Installation
 
 ```sh
-pip install newberryai
+ pip install newberryai
 ```
-
 ## Usage
 
-NewberryAI can be used both as a command-line tool and as a Python module.
-
-### Command-Line Interface
-
-The package provides a unified CLI with multiple subcommands:
+You can use the command-line interface:
 
 ```
 newberryai <command> [options]
@@ -30,6 +27,7 @@ Available commands:
 - `compliance` - Run compliance check on medical videos
 - `healthscribe` - Transcribe medical conversations
 - `ddx` - Get differential diagnosis assistance
+- `ExcelO` - Get excel formula AI assistance
 - `bill_extract` - Extract and analyze medical bill data
 
 #### Compliance Checker
@@ -62,6 +60,20 @@ newberryai ddx --interactive
 newberryai ddx --gradio
 ```
 
+#### Excel Formula Assistant
+
+```sh
+# With a specific Excel Query
+newberryai ExcelO --Excel_query "Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
+
+# Interactive CLI mode
+newberryai ExcelO --interactive
+
+# Launch Gradio web interface
+newberryai ExcelO --gradio
+```
+
+
 #### Medical Bill Extractor
 
 ```sh
@@ -84,6 +96,7 @@ You can also use NewberryAI as a Python module in your applications.
 ```python
 from newberryai import HealthScribe
 import os
+import newberryai
 
 # Set the environment variables for the AWS SDK
 os.environ['AWS_ACCESS_KEY_ID'] = 'your_aws_access_key_id'
@@ -149,6 +162,25 @@ print(response)
 # Or launch the Gradio web interface
 # ddx_chat.start_gradio()
 ```
+#### Excel Formual Genenrator AI Assistant
+
+```python
+from newberryai import ExcelExp
+
+# Initialize the DDx Assistant
+excel_expert = ExcelExp()
+
+# Ask a specific clinical question
+response = excel_expert.ask("Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C")
+print(response)
+
+# Alternatively, launch interactive CLI
+# excel_expert.run_cli()
+
+# Or launch the Gradio web interface
+# excel_expert.start_gradio()
+```
+
 
 #### Medical Bill Extractor
 
