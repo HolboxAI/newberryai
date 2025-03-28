@@ -143,7 +143,7 @@ def main():
                         help="Launch Gradio interface")
     Excelo_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
-    Excelo_parser.set_defaults(func=differential_diagnosis_command)
+    Excelo_parser.set_defaults(func=excel_formula_command)
 
     # Medical Bill Extractor Command 
     medical_bill_extractor_parser = subparsers.add_parser('bill_extract', help='Extract metadata from medical bills')
@@ -156,9 +156,6 @@ def main():
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
-    result = healthscribe(args.audio_file,args.job_name,args.data_access_role_arn, args.s3_bucket, args.s3_key)
-    print(result)
-
-
+    args.func(args)
 if __name__ == '__main__':
     main()
