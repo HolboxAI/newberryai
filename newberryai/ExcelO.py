@@ -38,7 +38,7 @@ class ExcelExp:
                 break
             
             # Process text input only
-            print("\Assistant: ", end="")
+            print("Assistant: ", end="")
             answer = self.ask(user_input)
             print(answer)
 
