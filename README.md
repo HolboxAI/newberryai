@@ -1,6 +1,6 @@
 # NewberryAI
 
-A Python package for medical scribing using AWS Transcribe Medical service.
+A Python package for AI tools using AWS service.
 
 ## Overview
 
