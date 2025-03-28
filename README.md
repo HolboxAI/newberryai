@@ -9,6 +9,7 @@ A Python package for AI tools using AWS service.
 - **Differential Diagnosis (DDx) Assistant**: Get assistance with clinical diagnosis
 - **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
+- **Coding Assistant**: Analyze code and help you with coding as debugger
 
 ## Installation
 
@@ -29,6 +30,8 @@ Available commands:
 - `ddx` - Get differential diagnosis assistance
 - `ExcelO` - Get excel formula AI assistance
 - `bill_extract` - Extract and analyze medical bill data
+- `coder` - Analyze code and help you with coding as debugger
+
 
 #### Compliance Checker
 
@@ -86,6 +89,19 @@ newberryai bill_extract --interactive
 # Launch Gradio web interface
 newberryai bill_extract --gradio
 ```
+#### Python Coding Assistant
+
+```sh
+# With a specific Excel Query
+newberryai coder --code_query " your Query realted to your python code"
+
+# Interactive CLI mode
+newberryai coder --interactive
+
+# Launch Gradio web interface
+newberryai coder --gradio
+```
+
 
 ### Python Module
 
@@ -199,6 +215,35 @@ print(analysis)
 
 # Or launch the Gradio web interface
 # extractor.start_gradio()
+```
+
+#### Coding and Debugging AI Assistant
+
+```python
+from newberryai import CodeReviewAssistant
+
+# Initialize the DDx Assistant
+code_debugger = CodeReviewAssistant()
+
+# Ask a specific clinical question
+response = code_debugger.ask("""Explain and correct below code
+def calculate_average(nums):
+sum = 0
+for num in nums:
+sum += num
+average = sum / len(nums)
+return average
+
+numbers = [10, 20, 30, 40, 50]
+result = calculate_average(numbers)
+print(“The average is:”, results)""")
+print(response)
+
+# Alternatively, launch interactive CLI
+# code_debugger.run_cli()
+
+# Or launch the Gradio web interface
+# code_debugger.start_gradio()
 ```
 
 ## Requirements
