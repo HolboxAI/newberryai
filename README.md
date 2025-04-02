@@ -1,26 +1,24 @@
-# NewberryAI Medical Tools
+# NewberryAI
 
+A Python package for AI tools using AWS service.
 
-## Features
+## Overview
 
 - **Compliance Checker**: Analyze videos for regulatory compliance
 - **HealthScribe**: Medical transcription using AWS HealthScribe
 - **Differential Diagnosis (DDx) Assistant**: Get assistance with clinical diagnosis
+- **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
+- **Coding Assistant**: Analyze code and help you with coding as debugger
 
 ## Installation
 
 ```sh
-pip install newberryai
+ pip install newberryai
 ```
-
 ## Usage
 
-NewberryAI can be used both as a command-line tool and as a Python module.
-
-### Command-Line Interface
-
-The package provides a unified CLI with multiple subcommands:
+You can use the command-line interface:
 
 ```
 newberryai <command> [options]
@@ -30,7 +28,10 @@ Available commands:
 - `compliance` - Run compliance check on medical videos
 - `healthscribe` - Transcribe medical conversations
 - `ddx` - Get differential diagnosis assistance
+- `ExcelO` - Get excel formula AI assistance
 - `bill_extract` - Extract and analyze medical bill data
+- `coder` - Analyze code and help you with coding as debugger
+
 
 #### Compliance Checker
 
@@ -62,6 +63,20 @@ newberryai ddx --interactive
 newberryai ddx --gradio
 ```
 
+#### Excel Formula Assistant
+
+```sh
+# With a specific Excel Query
+newberryai ExcelO --Excel_query "Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
+
+# Interactive CLI mode
+newberryai ExcelO --interactive
+
+# Launch Gradio web interface
+newberryai ExcelO --gradio
+```
+
+
 #### Medical Bill Extractor
 
 ```sh
@@ -74,6 +89,19 @@ newberryai bill_extract --interactive
 # Launch Gradio web interface
 newberryai bill_extract --gradio
 ```
+#### Python Coding Assistant
+
+```sh
+# With a specific Excel Query
+newberryai coder --code_query " your Query realted to your python code"
+
+# Interactive CLI mode
+newberryai coder --interactive
+
+# Launch Gradio web interface
+newberryai coder --gradio
+```
+
 
 ### Python Module
 
@@ -84,6 +112,7 @@ You can also use NewberryAI as a Python module in your applications.
 ```python
 from newberryai import HealthScribe
 import os
+import newberryai
 
 # Set the environment variables for the AWS SDK
 os.environ['AWS_ACCESS_KEY_ID'] = 'your_aws_access_key_id'
@@ -149,6 +178,25 @@ print(response)
 # Or launch the Gradio web interface
 # ddx_chat.start_gradio()
 ```
+#### Excel Formual Genenrator AI Assistant
+
+```python
+from newberryai import ExcelExp
+
+# Initialize the DDx Assistant
+excel_expert = ExcelExp()
+
+# Ask a specific clinical question
+response = excel_expert.ask("Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C")
+print(response)
+
+# Alternatively, launch interactive CLI
+# excel_expert.run_cli()
+
+# Or launch the Gradio web interface
+# excel_expert.start_gradio()
+```
+
 
 #### Medical Bill Extractor
 
@@ -167,6 +215,35 @@ print(analysis)
 
 # Or launch the Gradio web interface
 # extractor.start_gradio()
+```
+
+#### Coding and Debugging AI Assistant
+
+```python
+from newberryai import CodeReviewAssistant
+
+# Initialize the DDx Assistant
+code_debugger = CodeReviewAssistant()
+
+# Ask a specific clinical question
+response = code_debugger.ask("""Explain and correct below code
+def calculate_average(nums):
+sum = 0
+for num in nums:
+sum += num
+average = sum / len(nums)
+return average
+
+numbers = [10, 20, 30, 40, 50]
+result = calculate_average(numbers)
+print(“The average is:”, results)""")
+print(response)
+
+# Alternatively, launch interactive CLI
+# code_debugger.run_cli()
+
+# Or launch the Gradio web interface
+# code_debugger.start_gradio()
 ```
 
 ## Requirements
