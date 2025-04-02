@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# This section configures setuptools_scm
+
+# Specify the version scheme
+# "guess-next-dev" will use the latest tag and add a dev suffix if there are commits after the tag
+version_scheme = "guess-next-dev"
+
+# Specify the local scheme for local version components
+# "node-and-date" will add the commit hash and date to the version when working in a "dirty" git tree
+local_scheme = "node-and-date"
+
+# You can set a fallback version if git data is not available
+fallback_version = "0.0.0"
+
+# You can specify a custom tag regex if needed
+# tag_regex = "^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
+
+# Write the version to a Python file for runtime access
+write_to = "newberryai/_version.py"
