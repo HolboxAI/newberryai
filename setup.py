@@ -6,9 +6,9 @@ with open("README.md","r") as f :
 setup(
     name="newberryai",
     version="0.1.0",
-    author="",
-    author_email="",
-    description="",
+    author="Saurabh Patil, Jaideepsinh Dabhi",
+    author_email="jaideep@newberry.ai",
+    description="NewberryAI Python Package",
     packages=find_packages(),
     install_requires=[
         "boto3",
