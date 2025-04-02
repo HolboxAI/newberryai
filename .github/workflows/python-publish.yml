@@ -1,12 +1,12 @@
 name: Publish to PyPI
 
 on:
-  push:
-    branches:
-      - main
-    # Optionally, you can also trigger on tags
-    # tags:
-    #   - 'v*'
+  release:
+    types: [created]
+  # Alternative: trigger on specific tag pattern
+  # push:
+  #   tags:
+  #     - 'v*'
 
 jobs:
   build-and-publish:
