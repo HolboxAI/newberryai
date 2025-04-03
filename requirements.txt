@@ -4,3 +4,12 @@ pytest
 opencv-python
 setuptools
 gradio
+
+# Dependencies for Speech-to-Speech functionality
+numpy
+pyaudio
+sounddevice
+pydub
+textual
+openai
+typing_extensions

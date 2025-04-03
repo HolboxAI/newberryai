@@ -15,7 +15,15 @@ setup(
         "requests",
         "pytest",
         "opencv-python",
-        "gradio"
+        "setuptools",
+        "gradio",
+        "numpy",
+        "pyaudio",
+        "sounddevice",
+        "pydub",
+        "textual",
+        "openai",
+        "typing_extensions",
     ],
     entry_points={
         "console_scripts": [
