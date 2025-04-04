@@ -10,7 +10,7 @@ A Python package for AI tools using AWS service.
 - **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
 - **Coding Assistant**: Analyze code and help you with coding as debugger
-- **Speech to speech assistant**: Real-time voice interaction assistant
+- **Speech to speech assistant**: Real-time voice interactive assistant
 
 ## Installation
 
@@ -272,9 +272,46 @@ export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
 This ensures that your system is using the latest SSL certificates.
 
 
+
+---
+
+###  Setting Up OpenAI API Key for Speech-to-Speech
+
+To use OpenAI's Speech-to-Speech features, you need to set your API key as an environment variable.
+
+#### Step-by-Step:
+
+1. **Get your API key** from [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)
+
+2. **Set the environment variable** in your terminal or shell configuration file.
+
+##### For **bash** or **zsh** (macOS/Linux):
+```bash
+export OPENAI_API_KEY="your-api-key-here"
+```
+
+You can add this line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc` file to make it permanent.
+
+##### For **Windows (Command Prompt)**:
+```cmd
+set OPENAI_API_KEY=your-api-key-here
+```
+
+##### For **Windows (PowerShell)**:
+```powershell
+$env:OPENAI_API_KEY="your-api-key-here"
+```
+
+3. **Verify** it's set by running:
+```bash
+echo $OPENAI_API_KEY
+```
+
+
 ## Requirements
 
 - Python 3.8+
+- OpenAI account with Api keys
 - AWS account with appropriate permissions
 - Required AWS services:
   - Amazon S3
