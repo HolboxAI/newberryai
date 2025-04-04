@@ -10,6 +10,7 @@ A Python package for AI tools using AWS service.
 - **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
 - **Coding Assistant**: Analyze code and help you with coding as debugger
+- **Speech to speech assistant**: Real-time voice interaction assistant
 
 ## Installation
 
@@ -31,6 +32,7 @@ Available commands:
 - `ExcelO` - Get excel formula AI assistance
 - `bill_extract` - Extract and analyze medical bill data
 - `coder` - Analyze code and help you with coding as debugger
+- `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
 
 
 #### Compliance Checker
@@ -102,6 +104,12 @@ newberryai coder --interactive
 newberryai coder --gradio
 ```
 
+#### Speech to Speech Assitant
+
+```sh
+# Launch the real-time speech-to-speech application
+newberryai speech_to_speech
+```
 
 ### Python Module
 
@@ -245,6 +253,24 @@ print(response)
 # Or launch the Gradio web interface
 # code_debugger.start_gradio()
 ```
+
+#### Speech-to-Speech Assistant
+```python
+from newberryai import RealtimeApp
+
+# Initialize and run the speech-to-speech assistant
+app = RealtimeApp()
+app.run()
+```
+
+#### Troubleshooting: SSL Certificate Issues
+If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
+```sh
+pip install --upgrade certifi
+export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
+```
+This ensures that your system is using the latest SSL certificates.
+
 
 ## Requirements
 
