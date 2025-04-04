@@ -2,7 +2,7 @@ import argparse
 import sys
 from newberryai.health_chat import HealthChat
 
-SYSTEM_PROMPT = """
+Sys_Prompt = """
 Your task is to analyze the provided Python code snippet, identify any bugs or errors present, and provide a corrected version of the code that resolves these issues. Explain the problems you found in the original code and how your fixes address them. The corrected code should be functional, efficient, and adhere to best practices in Python programming.
 
 Key Focus Areas:
@@ -22,7 +22,7 @@ class CodeReviewAssistant:
         """
         Initialize the Code Review Assistant.
         """
-        self.assistant = HealthChat(system_prompt=SYSTEM_PROMPT)
+        self.assistant = HealthChat(system_prompt=Sys_Prompt)
 
     def start_gradio(self):
         """

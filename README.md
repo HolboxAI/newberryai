@@ -11,12 +11,15 @@ A Python package for AI tools using LLM.
 - **Medical Bill Extractor**: Extract and analyze data from medical bills
 - **Coding Assistant**: Analyze code and help you with coding as debugger
 - **Speech to speech assistant**: Real-time voice interactive assistant
+- **PII Redactor AI assistant**: Analyze text and remove PII (personally identifiable information) from the text
+- **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 
 ## Installation
 
 ```sh
  pip install newberryai
 ```
+
 ## Usage
 
 You can use the command-line interface:
@@ -33,14 +36,17 @@ Available commands:
 - `bill_extract` - Extract and analyze medical bill data
 - `coder` - Analyze code and help you with coding as debugger
 - `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
+- `PII_Red` - Analyze text and remove PII from the text using AI.
 
+- `PII_extract` - Analyze text and extract PII from the text using AI.
+
+### CLI Tool
 
 #### Compliance Checker
 
 ```sh
 newberryai compliance --video_file /path/to/video.mp4 --question "Is the video compliant with safety regulations such as mask?"
 ```
-
 #### HealthScribe
 
 ```sh
@@ -51,7 +57,6 @@ newberryai healthscribe --file_path conversation.wav \
                        --output_s3_bucket my-output-bucket \
                        --s3_key s3-key
 ```
-
 #### Differential Diagnosis Assistant
 
 ```sh
@@ -64,7 +69,6 @@ newberryai ddx --interactive
 # Launch Gradio web interface
 newberryai ddx --gradio
 ```
-
 #### Excel Formula Assistant
 
 ```sh
@@ -77,8 +81,6 @@ newberryai ExcelO --interactive
 # Launch Gradio web interface
 newberryai ExcelO --gradio
 ```
-
-
 #### Medical Bill Extractor
 
 ```sh
@@ -94,8 +96,8 @@ newberryai bill_extract --gradio
 #### Python Coding Assistant
 
 ```sh
-# With a specific Excel Query
-newberryai coder --code_query " your Query realted to your python code"
+# With a specific python coding Query
+newberryai coder --code_query " your Query related to your python code"
 
 # Interactive CLI mode
 newberryai coder --interactive
@@ -103,7 +105,30 @@ newberryai coder --interactive
 # Launch Gradio web interface
 newberryai coder --gradio
 ```
+#### PII Redactor AI Assistant
 
+```sh
+# With a specific Text
+newberryai PII_Red --text " your text containing PII."
+
+# Interactive CLI mode
+newberryai PII_Red --interactive
+
+# Launch Gradio web interface
+newberryai PII_Red --gradio
+```
+#### PII Extractor AI Assistant
+
+```sh
+# With a specific Text
+newberryai PII_extract --text " your text containing PII."
+
+# Interactive CLI mode
+newberryai PII_extract --interactive
+
+# Launch Gradio web interface
+newberryai PII_extract --gradio
+```
 #### Speech to Speech Assitant
 
 ```sh
@@ -143,7 +168,6 @@ result = scribe.process(
 # Use the summary
 print(result.summary)
 ```
-
 #### Compliance Checker
 
 ```python
@@ -167,7 +191,6 @@ else:
     print(f"Compliant: {'Yes' if result['compliant'] else 'No'}")
     print(f"Analysis: {result['analysis']}")
 ```
-
 #### Differential Diagnosis Assistant
 
 ```python
@@ -204,8 +227,6 @@ print(response)
 # Or launch the Gradio web interface
 # excel_expert.start_gradio()
 ```
-
-
 #### Medical Bill Extractor
 
 ```python
@@ -224,7 +245,6 @@ print(analysis)
 # Or launch the Gradio web interface
 # extractor.start_gradio()
 ```
-
 #### Coding and Debugging AI Assistant
 
 ```python
@@ -253,7 +273,6 @@ print(response)
 # Or launch the Gradio web interface
 # code_debugger.start_gradio()
 ```
-
 #### Speech-to-Speech Assistant
 ```python
 from newberryai import RealtimeApp
@@ -262,7 +281,42 @@ from newberryai import RealtimeApp
 app = RealtimeApp()
 app.run()
 ```
+#### PII Redactor AI Assistant
 
+```python
+from newberryai import PII_Redaction
+
+# Initialize the PII Redactor Assistant
+pii_red = PII_Redaction()
+
+# Provide a text to detect PII
+response = pii_red.ask("Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com")
+print(response)
+
+# Alternatively, launch interactive CLI
+# pii_red.run_cli()
+
+# Or launch the Gradio web interface
+# pii_red.start_gradio()
+```
+#### PII extractor AI Assistant
+
+```python
+from newberryai import PII_extraction
+
+# Initialize the PII Extraction Assistant
+pii_extract = PII_extraction()
+
+# Provide a text to detect PII
+response = pii_extract.ask("Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com")
+print(response)
+
+# Alternatively, launch interactive CLI
+# pii_extract.run_cli()
+
+# Or launch the Gradio web interface
+# pii_extract.start_gradio()
+```
 #### Troubleshooting: SSL Certificate Issues
 If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
 ```sh
@@ -274,7 +328,6 @@ This ensures that your system is using the latest SSL certificates.
 
 
 ---
-
 ###  Setting Up OpenAI API Key for Speech-to-Speech
 
 To use OpenAI's Speech-to-Speech features, you need to set your API key as an environment variable.

@@ -3,7 +3,7 @@ import json
 import boto3
 import gradio as gr
 import base64
-from typing import Optional, Union, List, Dict, Any
+from typing import Optional
 
 
 class HealthChat:
