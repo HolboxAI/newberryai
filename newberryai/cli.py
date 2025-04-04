@@ -129,7 +129,7 @@ def medical_bill_extractor_command(args):
 
 def main():
     """Command line interface for NewberryAI tools."""
-    parser = argparse.ArgumentParser(description='NewberryAI - AWS Powered tools for medical domain')
+    parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     subparsers.required = True
     
