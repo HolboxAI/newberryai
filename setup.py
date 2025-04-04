@@ -7,7 +7,7 @@ setup(
     name="newberryai",
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
-    author="Saurabh Patil, Jaideepsinh Dabhi",
+    author="Saurabh Patil, Jaideepsinh Dabhi, Harsh Langaliya",
     author_email="jaideep@newberry.ai",
     description="NewberryAI Python Package",
     packages=find_packages(),
