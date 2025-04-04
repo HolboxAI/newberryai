@@ -5,3 +5,4 @@ from .ddx import DDxChat
 from .medical_bill_extractor import Bill_extractor
 from .ExcelO import ExcelExp
 from .debugger import CodeReviewAssistant
+from .speechtospeech import RealtimeApp
