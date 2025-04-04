@@ -1,5 +1,6 @@
 import argparse
 import sys
+import os 
 from newberryai import ComplianceChecker
 from newberryai import HealthScribe
 from newberryai import DDxChat
@@ -7,7 +8,8 @@ from newberryai import Bill_extractor
 from newberryai import ExcelExp
 from newberryai import CodeReviewAssistant
 from newberryai import RealtimeApp
-import os 
+from newberryai import PII_Redaction
+from newberryai import PII_extraction
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -95,6 +97,39 @@ def code_debugger_command(args):
     else: 
         print("Check the argument via --help")
 
+def pii_redactor_command(args):
+    pii_red = PII_Redaction()
+    
+    if args.gradio:
+        print("Launching Gradio interface for AI Assistant")
+        pii_red.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for AI Assistant")
+        pii_red.run_cli()
+    elif args.text:
+        print(f"Question: {args.text}\n")
+        response = pii_red.ask(args.text)
+        print("Response:")
+        print(response)
+    else: 
+        print("Check the argument via --help")
+
+def pii_extractor_command(args):
+    pii_red = PII_extraction()
+    
+    if args.gradio:
+        print("Launching Gradio interface for AI Assistant")
+        pii_red.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for AI Assistant")
+        pii_red.run_cli()
+    elif args.text:
+        print(f"Question: {args.text}\n")
+        response = pii_red.ask(args.text)
+        print("Response:")
+        print(response)
+    else: 
+        print("Check the argument via --help")
 
 def speech_to_speech_command(args):
     """Handle the speech-to-speech subcommand."""
@@ -179,6 +214,25 @@ def main():
                         help="Run in interactive CLI mode")
     coder_parser.set_defaults(func=code_debugger_command)
 
+    # PII Redactor AI Assistant
+    pii_parser = subparsers.add_parser('PII_Red', help='Ask for help in redaction of PII from text')
+    pii_parser.add_argument("--text", "-t", type=str, help="Your text for AI Assistant")
+    pii_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    pii_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    pii_parser.set_defaults(func=pii_redactor_command)
+
+    # PII Extractor AI Assistant
+    pii_ex_parser = subparsers.add_parser('PII_extract', help='Ask for help in extraction of PII from text')
+    pii_ex_parser.add_argument("--text", "-t", type=str, help="Your text for AI Assistant")
+    pii_ex_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    pii_ex_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    pii_ex_parser.set_defaults(func=pii_extractor_command)
+
+
     # Medical Bill Extractor Command 
     medical_bill_extractor_parser = subparsers.add_parser('bill_extract', help='Extract metadata from medical bills')
     medical_bill_extractor_parser.add_argument("--image_path", "-img", type=str, help="Path to a document image to analyze")
@@ -189,7 +243,7 @@ def main():
     medical_bill_extractor_parser.set_defaults(func=medical_bill_extractor_command)
     
     # Speech to speech
-    speech_to_speech_parser = subparsers.add_parser('speech_to_speech', help='Launch real-time Speech-to-Speech Assistant')
+    speech_to_speech_parser = subparsers.add_parser('speech_to_speech', help='Launch real-time Speech-to-Speech AI Assistant')
     speech_to_speech_parser.set_defaults(func=speech_to_speech_command)
 
     # Parse arguments and call the appropriate function
