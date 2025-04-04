@@ -1,6 +1,6 @@
 # NewberryAI
 
-A Python package for AI tools using AWS service.
+A Python package for AI tools using LLM.
 
 ## Overview
 
