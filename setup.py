@@ -1,5 +1,20 @@
 from setuptools import setup, find_packages
 
+def get_requirements(file_path:str)->List[str]:
+    """
+    this function will give list of requriments
+    """
+    requirement = []
+    with open(file_path, 'r') as file_obj:
+        requirement=file_obj.readlines()
+        requirement = [req.rstrip() for req in requirement]
+        #print(requirement)
+        if '-e .' in requirement:
+            requirement.remove('-e .')
+    return requirement
+
+
+
 with open("README.md", "r") as f:
     description = f.read()
 
@@ -11,13 +26,7 @@ setup(
     author_email="jaideep@newberry.ai",
     description="NewberryAI Python Package",
     packages=find_packages(),
-    install_requires=[
-        "boto3",
-        "requests",
-        "pytest",
-        "opencv-python",
-        "gradio"
-    ],
+    install_requires=get_requirements('requirements.txt'),
     entry_points={
         "console_scripts": [
             "newberryai=newberryai.cli:main",
