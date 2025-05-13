@@ -14,9 +14,15 @@ class HealthChat:
         max_tokens: int = 1000
 
     ):
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        if credentials is None:
+            raise ValueError("No AWS credentials found. Please configure AWS credentials.")
+        frozen_credentials = credentials.get_frozen_credentials()
+
         self.region = os.environ.get("AWS_REGION", "us-east-1")
-        self.aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+        self.aws_access_key_id = frozen_credentials.access_key
+        self.aws_secret_access_key = frozen_credentials.secret_key
         self.health_chat_session = boto3.session.Session(
                 region_name=self.region,
                 aws_access_key_id=self.aws_access_key_id,
@@ -45,30 +51,31 @@ class HealthChat:
             return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-    def ask(self, question: Optional[str] = None, image_path: Optional[str] = None) -> str:
+    def ask(self, question: Optional[str] = None, image_path: Optional[str] = None, return_full_response: bool = False) -> str:
         """
         Send a question or an image (or both) to Chatbot and get a response.
         At least one of question or image_path must be provided.
-        
+
         Args:
             question (str, optional): The question to ask Chatbot
             image_path (str, optional): Path to an image file to include
-            
+            return_full_response (bool): If True, return the full response object. Default is False.
+
         Returns:
-            str: Chatbot's response text
+            str or dict: Chatbot's response text or full response object
         """
         if question is None and image_path is None:
             return "Error: Please provide either a question, an image, or both."
 
         content = []
-        
+
         # Add text content if provided
         if question:
             content.append({
                 "type": "text",
                 "text": question
             })
-        
+
         # Add image content if provided
         if image_path:
             try:
@@ -81,7 +88,7 @@ class HealthChat:
                         "data": image_data
                     }
                 })
-                
+
                 # If no question is provided, add a default prompt for image analysis
                 if not question:
                     content.insert(0, {
@@ -95,7 +102,7 @@ class HealthChat:
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": self.max_tokens,
             "system": self.system_prompt,
-            "temperature":0.0,
+            "temperature": 0.0,
             "messages": [
                 {
                     "role": "user",
@@ -103,19 +110,23 @@ class HealthChat:
                 }
             ]
         })
-        
+
         try:
             response = self.runtime.invoke_model(
                 modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
                 contentType='application/json',
                 body=body,
-                
             )
             
+            if return_full_response:
+                return response
+
             response_body = json.loads(response['body'].read())
             return response_body['content'][0]["text"]
+
         except Exception as e:
             return f"Error: {str(e)}"
+
     
     def _get_media_type(self, file_path: str) -> str:
         """
