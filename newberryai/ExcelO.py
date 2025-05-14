@@ -42,7 +42,7 @@ class ExcelExp:
             answer = self.ask(user_input)
             print(answer)
 
-    def ask(self, question):
+    def ask(self, question, **kwargs):
         """
         Ask a question to the AI assistant.
         
@@ -57,7 +57,7 @@ class ExcelExp:
             return "Error: This AI assistant only accepts text questions."
         
         # Use the ChatQA ask method with only the question parameter (no image)
-        return self.assistant.ask(question=question, image_path=None)
+        return self.assistant.ask(question=question, image_path=None, **kwargs)
 
 
 def ExcelO_CLI():

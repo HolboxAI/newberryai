@@ -166,7 +166,7 @@ class Bill_extractor:
             print("\nAnalysis:")
             print(answer)
 
-    def analyze_document(self, image_path: str):
+    def analyze_document(self, image_path: str, **kwargs):
         """
         Analyze a document image
         
@@ -178,7 +178,7 @@ class Bill_extractor:
         """
         # Use a default prompt for document analysis
         default_prompt = "Please analyze this document and extract the key information into a structured JSON format. Detect whether this is a MEDICAL BILL or an INVENTORY DOCUMENT, then extract data accordingly."
-        return self.assistant.ask(question=default_prompt, image_path=image_path)
+        return self.assistant.ask(question=default_prompt, image_path=image_path, **kwargs)
 
 
 def Bill_exc_CLI():

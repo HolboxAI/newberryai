@@ -54,7 +54,7 @@ class CodeReviewAssistant:
             response = self.analyze_code(user_input)
             print(response)
 
-    def ask(self, code_snippet):
+    def ask(self, code_snippet, **kwargs):
         """
         Analyze the provided code snippet.
         
@@ -69,7 +69,7 @@ class CodeReviewAssistant:
             return "Error: Please provide a valid code snippet as text."
         
         # Use the assistant's analysis method
-        return self.assistant.ask(question=code_snippet, image_path=None)
+        return self.assistant.ask(question=code_snippet, image_path=None, **kwargs)
 
 
 def coder_CLI():
