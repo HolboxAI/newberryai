@@ -82,7 +82,7 @@ class PII_Redaction:
             answer = self.ask(user_input)
             print(answer)
 
-    def ask(self, question):
+    def ask(self, question, **kwargs):
         """
         Provide text to AI assistant.
         
@@ -97,7 +97,7 @@ class PII_Redaction:
             return "Error: This AI assistant only accepts text."
         
         # Use the ChatQA ask method with only the question parameter (no image)
-        return self.assistant.ask(question=question, image_path=None)
+        return self.assistant.ask(question=question, image_path=None, **kwargs)
 
 
 def PII_redactor_CLI():

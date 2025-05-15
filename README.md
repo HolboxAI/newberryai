@@ -85,7 +85,7 @@ newberryai ExcelO --gradio
 
 ```sh
 # Analyze a specific document
-newberryai bill_extract --image_path /path/to/medical_bill.pdf
+newberryai bill_extract --image_path /path/to/medical_bill.jpeg
 
 # Interactive CLI mode
 newberryai bill_extract --interactive
