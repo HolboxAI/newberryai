@@ -11,3 +11,4 @@ pydub
 textual
 openai
 typing_extensions
+PyMuPDF

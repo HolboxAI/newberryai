@@ -4,3 +4,4 @@ test.ipynb
 newberryai.egg-info/
 newberryai/__pycache__/
 package_test/
+__pycache__/
