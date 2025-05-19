@@ -236,7 +236,7 @@ from newberryai import Bill_extractor
 extractor = Bill_extractor()
 
 # Analyze a document
-analysis = extractor.analyze_document("/path/to/medical_bill.pdf")
+analysis = extractor.analyze_document("/path/to/medical_bill.jpeg")
 print(analysis)
 
 # Alternatively, launch interactive CLI
