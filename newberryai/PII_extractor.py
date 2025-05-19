@@ -110,37 +110,3 @@ class PII_extraction:
         
         # Use the ChatQA ask method with only the question parameter (no image)
         return self.assistant.ask(question=question, image_path=None, **kwargs)
-
-
-def PII_extractor_CLI():
-    """Command-line interface for the AI Assistant"""
-    parser = argparse.ArgumentParser(description="PII AI Assistant")
-
-    parser.add_argument("--text", "-t", type=str, help="The text for PII extraction AI Assistant")
-    parser.add_argument("--gradio", "-g", action="store_true", 
-                        help="Launch Gradio interface")
-    parser.add_argument("--interactive", "-i", action="store_true",
-                        help="Run in interactive CLI mode")
-    
-    args = parser.parse_args()
-    
-    pii_extract = PII_extraction()
-    
-    if args.gradio:
-        print("Launching Gradio interface for AI Assistant")
-        pii_extract.start_gradio()
-    elif args.interactive:
-        print("Starting interactive session for AI Assistant")
-        pii_extract.run_cli()
-    elif args.question:
-        print(f"Question: {args.question}\n")
-        response = pii_extract.ask(args.question)
-        print("Response:")
-        print(response)
-    else:
-        parser.print_help()
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    PII_extractor_CLI()

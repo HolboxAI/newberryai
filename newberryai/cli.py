@@ -1,15 +1,7 @@
 import argparse
 import sys
 import os 
-from newberryai import ComplianceChecker
-from newberryai import HealthScribe
-from newberryai import DDxChat
-from newberryai import Bill_extractor
-from newberryai import ExcelExp
-from newberryai import CodeReviewAssistant
-from newberryai import RealtimeApp
-from newberryai import PII_Redaction
-from newberryai import PII_extraction
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer)
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -161,6 +153,29 @@ def medical_bill_extractor_command(args):
     else:
         print("Check the argument via --help")
 
+def pdf_summarizer_command(args):
+    """Handle the PDF summarizer subcommand."""
+    summarizer = DocSummarizer()
+    
+    if args.gradio:
+        print("Launching Gradio interface for PDF Summarizer")
+        summarizer.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for PDF Summarizer")
+        summarizer.run_cli()
+    elif args.document_path:
+        # Validate that the document file exists
+        if not os.path.exists(args.document_path):
+            print(f"Error: Document file not found at path: {args.document_path}")
+            sys.exit(1)
+        
+        print(f"Analyzing document: {args.document_path}")
+        response = summarizer.ask(args.document_path)
+        
+        print("\nSummary:")
+        print(response)
+    else:
+        print("Check the argument via --help")
 
 def main():
     """Command line interface for NewberryAI tools."""
@@ -245,6 +260,15 @@ def main():
     # Speech to speech
     speech_to_speech_parser = subparsers.add_parser('speech_to_speech', help='Launch real-time Speech-to-Speech AI Assistant')
     speech_to_speech_parser.set_defaults(func=speech_to_speech_command)
+
+    # PDF Summarizer Command
+    pdf_summarizer_parser = subparsers.add_parser('pdf_summarizer', help='Extract and summarize content from PDF documents')
+    pdf_summarizer_parser.add_argument("--document_path", "-d", type=str, help="Path to the PDF document to analyze")
+    pdf_summarizer_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    pdf_summarizer_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    pdf_summarizer_parser.set_defaults(func=pdf_summarizer_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

@@ -236,7 +236,7 @@ from newberryai import Bill_extractor
 extractor = Bill_extractor()
 
 # Analyze a document
-analysis = extractor.analyze_document("/path/to/medical_bill.pdf")
+analysis = extractor.analyze_document("/path/to/medical_bill.jpeg")
 print(analysis)
 
 # Alternatively, launch interactive CLI
@@ -316,6 +316,36 @@ print(response)
 
 # Or launch the Gradio web interface
 # pii_extract.start_gradio()
+```
+#### PDF Document Summarizer
+
+```python
+from newberryai import DocSummarizer
+
+# Initialize the PDF Summarizer
+summarizer = DocSummarizer()
+
+# Summarize a specific document
+response = summarizer.ask("/path/to/your/document.pdf")
+print(response)
+
+# Alternatively, launch interactive CLI
+# summarizer.run_cli()
+
+# Or launch the Gradio web interface
+# summarizer.start_gradio()
+```
+#### CLI Usage for PDF Summarizer
+
+```sh
+# With a specific document
+newberryai pdf_summarizer --code /path/to/your/document.pdf
+
+# Interactive CLI mode
+newberryai pdf_summarizer --interactive
+
+# Launch Gradio web interface
+newberryai pdf_summarizer --gradio
 ```
 #### Troubleshooting: SSL Certificate Issues
 If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
