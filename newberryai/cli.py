@@ -1,16 +1,7 @@
 import argparse
 import sys
 import os 
-from newberryai import ComplianceChecker
-from newberryai import HealthScribe
-from newberryai import DDxChat
-from newberryai import Bill_extractor
-from newberryai import ExcelExp
-from newberryai import CodeReviewAssistant
-from newberryai import RealtimeApp
-from newberryai import PII_Redaction
-from newberryai import PII_extraction
-from newberryai import DocSummarizer
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer)
 
 def compliance_command(args):
     """Handle the compliance subcommand."""

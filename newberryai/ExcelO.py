@@ -58,37 +58,3 @@ class ExcelExp:
         
         # Use the ChatQA ask method with only the question parameter (no image)
         return self.assistant.ask(question=question, image_path=None, **kwargs)
-
-
-def ExcelO_CLI():
-    """Command-line interface for the AI Assistant"""
-    parser = argparse.ArgumentParser(description="AI Assistant")
-
-    parser.add_argument("--question", "-q", type=str, help="Enter problem, data range, conditions, and notes Here")
-    parser.add_argument("--gradio", "-g", action="store_true", 
-                        help="Launch Gradio interface")
-    parser.add_argument("--interactive", "-i", action="store_true",
-                        help="Run in interactive CLI mode")
-    
-    args = parser.parse_args()
-    
-    ddx_chat = ExcelExp()
-    
-    if args.gradio:
-        print("Launching Gradio interface for Excel AI Assistant")
-        ddx_chat.start_gradio()
-    elif args.interactive:
-        print("Starting interactive session for Excel AI Assistant")
-        ddx_chat.run_cli()
-    elif args.question:
-        print(f"Question: {args.question}\n")
-        response = ddx_chat.ask(args.question)
-        print("Response:")
-        print(response)
-    else:
-        parser.print_help()
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    ExcelO_CLI()
