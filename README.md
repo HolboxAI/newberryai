@@ -13,6 +13,7 @@ A Python package for AI tools using LLM.
 - **Speech to speech assistant**: Real-time voice interactive assistant
 - **PII Redactor AI assistant**: Analyze text and remove PII (personally identifiable information) from the text
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
+- **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 
 ## Installation
 
@@ -347,6 +348,18 @@ newberryai pdf_summarizer --interactive
 # Launch Gradio web interface
 newberryai pdf_summarizer --gradio
 ```
+#### CLI Usage for EDA 
+
+``` sh
+ #Analyze a CSV file interactively
+
+newberryai eda --file_path /path/to/your/data.csv --interactive
+
+ #Launch Gradio web interface
+newberryai eda --file_path /path/to/your/data.csv --gradio
+
+#Generate visualizations (after loading a file)
+newberryai eda --file_path /path/to/your/data.csv --visualize
 #### Troubleshooting: SSL Certificate Issues
 If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
 ```sh
