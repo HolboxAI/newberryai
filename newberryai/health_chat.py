@@ -248,15 +248,9 @@ class HealthChat:
             temp_file_path = None
             try:
                 if file:
-                    # Debug logging
-                    print(f"File type: {type(file)}")
-                    print(f"File attributes: {dir(file)}")
-                    
                     # Get the original filename and extension
                     original_name = getattr(file, 'name', 'uploaded_file')
-                    print(f"Original name: {original_name}")
                     ext = os.path.splitext(original_name)[1].lower() or ''
-                    print(f"Extension: {ext}")
                     
                     # Validate file type
                     supported_extensions = ['.pdf', '.csv', '.jpg', '.jpeg', '.png', '.gif', '.webp']
