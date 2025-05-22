@@ -7,46 +7,68 @@ from newberryai.health_chat import HealthChat
 
 
 Sys_Prompt = """
-You are a data science assistant specialized in Exploratory Data Analysis (EDA). Your primary role is to PERFORM analysis, not suggest code.
 
-1. DIRECT ANALYSIS:
-- When asked for analysis, PERFORM the actual analysis using the provided data
-- Show actual values, statistics, and insights from the data
-- DO NOT suggest code or explain how to do the analysis
-- Example: Instead of suggesting code for mean calculation, show the actual mean value
+**You are a data science assistant specializing exclusively in Exploratory Data Analysis (EDA). Your primary task is to perform analysis and provide direct insights from the given dataset.**
 
-2. HYPOTHESIS TESTING:
-- You can perform statistical hypothesis tests (e.g., t-test, chi-square, ANOVA, etc.) on the dataset when requested
-- Clearly state the test performed, the hypothesis, the test statistic, p-value, and interpretation of the result
+### Instructions:
+
+1. **Perform Direct Analysis:**
+
+   * Provide actual calculated statistics, values, and insights based strictly on the dataset.
+   * Do **not** suggest code or explain how to perform the analysis.
+   * Example: Instead of explaining how to calculate the mean, state the mean value directly, e.g., "The mean price is \$445.86."
+
+2. **Hypothesis Testing:**
+
+   * When requested, perform appropriate statistical tests such as t-tests, chi-square tests, ANOVA, or non-parametric alternatives based on the data characteristics and the research question.
+   * For each test, clearly state:
+
+     * The name of the statistical test used and why it was chosen (e.g., data type, distribution, sample independence)
+     *The null hypothesis (H0) and alternative hypothesis (H1) in clear, context-specific terms.
+     * Check and report on key assumptions relevant to the test (e.g., normality, variance homogeneity, independence).
+     * Provide the test statistic value and degrees of freedom (if applicable).
+     * Provide the exact p-value and the significance level used for the decision (usually 0.05).
+     *Interpret the result in the context of the dataset and the hypothesis being tested, explaining what rejecting or not rejecting H0 means for the data.
+     *If assumptions are violated, recommend or perform an appropriate alternative test.
 
 
-3. RESPONSE FORMAT:
-For simple queries:
-- Direct answer with actual values
-- Example: "The mean price is $445.86"
 
-For analysis requests:
-- Show actual statistics and values
-- Present real insights from the data
-- Include actual numbers and percentages
-- Example: "Electronics category has the highest average price at $899.99"
+3. **Response Format:**
 
-4. DATA CONTEXT:
-- Use the provided dataset information
-- Reference actual column names and values
-- Show real calculations and results
-- Example: "The correlation between price and rating is 0.75"
+   * For simple queries, provide only the direct answer with actual numbers or statistics.
+     Example: "The dataset contains 1,234 rows."
+   * For broader analysis, include relevant statistics and concrete insights with numerical values and percentages.
+     Example: "The Electronics category has the highest average price at \$899.99."
+   * Be concise and focused. Provide **only** the requested information.
 
-5. VISUALIZATION REQUESTS:
-- When asked for visualizations, describe the actual patterns
-- Example: "The price distribution shows a right-skew with most products priced between $50-$200"
+4. **Data Context & Reference:**
 
-6. SAFETY AND ETHICS:
-- Never store or share user data
-- Clarify that insights are based on the current dataset
-- Recommend validation through domain expertise
+   * Use the exact column names and data values from the dataset.
+   * Include real calculations and derived results (e.g., correlations, means, counts).
+   * Example: "The correlation between price and rating is 0.75."
 
-Remember: PERFORM the analysis, don't suggest how to do it. Show actual values and insights from the data.
+5. **Visualization Descriptions:**
+
+   * When asked, describe visual patterns clearly without code or plots.
+   * Example: "Price distribution is right-skewed with most prices between \$50 and \$200."
+
+6. **Safety and Ethics:**
+
+   * Do **not** store, share, or expose any user data.
+   * Make clear all insights are based solely on the provided dataset.
+   * Recommend domain expert validation for any critical decisions.
+
+7. **Focus and Brevity:**
+
+   * Answer **only** the question asked. Avoid adding unsolicited information.
+   * Example:
+
+     * Q: "How many rows are in the dataset?"
+     * A: "There are 1,234 rows."
+   * Avoid lengthy explanations or off-topic details.
+
+*** Remember :Perform the analysis directly—do not suggest methods or explain how to do it.
+ Provide actual values and concrete insights from the data. Stay focused and answer only what is asked, without adding extra information
 """
 
 class EDA:
@@ -61,7 +83,7 @@ class EDA:
             title="EDA AI Assistant",
             description="Upload your CSV file or enter your data analysis question",
             input_text_label="Enter your question or data description",
-            input_image_label="Upload CSV file (optional)",
+            input_files_label="Upload CSV file (optional)",
             output_label="EDA Analysis"
         )  
     def visualize_data(self, plot_type=None):
@@ -240,11 +262,24 @@ class EDA:
                 "dtypes": self.current_data.dtypes.to_dict(),
                 "summary_stats": self.current_data.describe().to_dict(),
                 "categorical_stats": {
-                    col: self.current_data[col].value_counts().to_dict()
+                    col: {
+                        "unique_values": len(self.current_data[col].unique()),
+                        "most_common": self.current_data[col].value_counts().head(1).to_dict(),
+                        "value_counts": self.current_data[col].value_counts().to_dict()
+                    }
                     for col in self.current_data.select_dtypes(include=['object']).columns
                 },
                 "correlations": self.current_data.select_dtypes(include=[np.number]).corr().to_dict(),
-                "missing_values": self.current_data.isnull().sum().to_dict()
+                "missing_values": self.current_data.isnull().sum().to_dict(),
+                "numeric_stats": {
+                    col: {
+                        "mean": float(self.current_data[col].mean()),
+                        "std": float(self.current_data[col].std()),
+                        "min": float(self.current_data[col].min()),
+                        "max": float(self.current_data[col].max())
+                    }
+                    for col in self.current_data.select_dtypes(include=[np.number]).columns
+                }
             }
             
             # Convert the data summary to a string format
@@ -252,11 +287,26 @@ class EDA:
 Current dataset information:
 - Shape: {data_info['shape']}
 - Columns: {', '.join(data_info['columns'])}
-- Data Types: {data_info['dtypes']}
-- Summary Statistics: {data_info['summary_stats']}
-- Categorical Statistics: {data_info['categorical_stats']}
-- Correlations: {data_info['correlations']}
-- Missing Values: {data_info['missing_values']}
+
+Data Types:
+{chr(10).join(f'- {col}: {dtype}' for col, dtype in data_info['dtypes'].items())}
+
+Summary Statistics:
+{chr(10).join(f'- {col}: Mean={stats["mean"]:.2f}, Std={stats["std"]:.2f}, Min={stats["min"]:.2f}, Max={stats["max"]:.2f}' 
+    for col, stats in data_info['numeric_stats'].items())}
+
+Categorical Statistics:
+{chr(10).join(f'- {col}: {len(stats["value_counts"])} unique values, Most common: {list(stats["most_common"].keys())[0]} ({list(stats["most_common"].values())[0]} occurrences)'
+    for col, stats in data_info['categorical_stats'].items())}
+
+Missing Values:
+{chr(10).join(f'- {col}: {count} missing values' for col, count in data_info['missing_values'].items() if count > 0)}
+
+Strong Correlations (|r| > 0.5):
+{chr(10).join(f'- {col1} and {col2}: {corr:.2f}' 
+    for col1 in data_info['correlations'] 
+    for col2 in data_info['correlations'][col1] 
+    if col1 < col2 and abs(data_info['correlations'][col1][col2]) > 0.5)}
 """
             question = data_context + "\n" + question
         
