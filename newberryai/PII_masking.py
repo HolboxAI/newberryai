@@ -1,5 +1,3 @@
-import argparse
-import sys
 from newberryai.health_chat import HealthChat
 
 Sys_Prompt = """
@@ -62,7 +60,7 @@ class PII_Redaction:
                 title="PII Redaction Expert ",
                 description="Provide your text it will hide all the PII information from the text ",
                 input_text_label="Enter Input text",
-                input_image_label=None,  # Remove image input option
+                input_files_label=None,  # Remove file input option
                 output_label="Redacted Text"
             )
 
@@ -96,5 +94,5 @@ class PII_Redaction:
         if not isinstance(question, str):
             return "Error: This AI assistant only accepts text."
         
-        # Use the ChatQA ask method with only the question parameter (no image)
-        return self.assistant.ask(question=question, image_path=None, **kwargs)
+        # Use the ChatQA ask method with only the question parameter (no file)
+        return self.assistant.ask(question=question, file_path=None, **kwargs)

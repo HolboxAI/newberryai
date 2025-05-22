@@ -1,6 +1,4 @@
 import os
-import sys
-import argparse
 from newberryai.health_chat import HealthChat
 from typing import Optional
 
@@ -141,7 +139,7 @@ class Bill_extractor:
             title="Extract Key Data from Documents",
             description="Upload a hospital document for automatic analysis. The AI will detect whether it's a MEDICAL BILL or an INVENTORY DOCUMENT and extract data accordingly.",
             input_text_label="Additional instructions (optional)",
-            input_image_label="Upload document (required)",
+            input_files_label="Upload document (required)",
             output_label="Extracted data and analysis"
         )
 
@@ -166,7 +164,7 @@ class Bill_extractor:
             print("\nAnalysis:")
             print(answer)
 
-    def analyze_document(self, image_path: str, **kwargs):
+    def analyze_document(self, file_path: str, **kwargs):
         """
         Analyze a document image
         
@@ -178,4 +176,5 @@ class Bill_extractor:
         """
         # Use a default prompt for document analysis
         default_prompt = "Please analyze this document and extract the key information into a structured JSON format. Detect whether this is a MEDICAL BILL or an INVENTORY DOCUMENT, then extract data accordingly."
-        return self.assistant.ask(question=default_prompt, image_path=image_path, **kwargs)
+        return self.assistant.ask(question=default_prompt, file_path=file_path, **kwargs)
+  

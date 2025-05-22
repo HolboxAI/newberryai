@@ -1,5 +1,3 @@
-import argparse
-import sys
 from newberryai.health_chat import HealthChat
 
 Sys_Prompt = """
@@ -32,7 +30,7 @@ class CodeReviewAssistant:
             title="AI Code Review Assistant",
             description="Analyze and improve your Python code with AI-powered insights",
             input_text_label="Paste your Python code snippet here",
-            input_image_label=None,  # Disable image input
+            input_files_label=None,  # Disable file input
             output_label="Code Review and Suggestions"
         )
 
@@ -69,4 +67,5 @@ class CodeReviewAssistant:
             return "Error: Please provide a valid code snippet as text."
         
         # Use the assistant's analysis method
-        return self.assistant.ask(question=code_snippet, image_path=None, **kwargs)
+        return self.assistant.ask(question=code_snippet, file_path=None, **kwargs)
+    

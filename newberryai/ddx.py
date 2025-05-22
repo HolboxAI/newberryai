@@ -1,5 +1,3 @@
-import argparse
-import sys
 from newberryai.health_chat import HealthChat
 
 Sys_Prompt = """
@@ -121,7 +119,7 @@ class DDxChat:
                 title="Differential Diagnosis AI Assistant",
                 description="Ask about differential diagnoses, diagnostic approaches, or distinguishing features between conditions.",
                 input_text_label="Enter clinical scenario or medical question",
-                input_image_label=None,  # Remove image input option
+                input_files_label=None,  # Remove file input option
                 output_label="Differential Diagnosis Analysis"
             )
 
@@ -155,5 +153,5 @@ class DDxChat:
         if not isinstance(question, str):
             return "Error: This DDx assistant only accepts text questions."
         
-        # Use the ChatQA ask method with only the question parameter (no image)
-        return self.assistant.ask(question=question, image_path=None, **kwargs)
+        # Use the ChatQA ask method with only the question parameter (no file)
+        return self.assistant.ask(question=question, file_path=None, **kwargs)

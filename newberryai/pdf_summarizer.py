@@ -1,6 +1,3 @@
-import argparse
-import sys
-import fitz
 from newberryai.health_chat import HealthChat
 
 Sys_Prompt = """
@@ -42,8 +39,8 @@ class DocSummarizer:
         self.assistant.launch_gradio(
             title="Document Summarizer Assistant",
             description="Extract and summarize your document with AI",
-            input_text_label="Paste your document path here",
-            input_image_label=None,  # Disable image input
+            input_text_label="Additional instructions (optional)",
+            input_files_label= "Upload document (required)",
             output_label="Summary"
         )
 
@@ -65,36 +62,7 @@ class DocSummarizer:
             response = self.ask(user_input)
             print(response)
 
-    def extract(self, doc_path):
-        """
-        Extract text from a PDF document using PyMuPDF (fitz).
-        
-        Args:
-            doc_path (str): Path to the PDF document
-            
-        Returns:
-            str: Extracted text from the document
-            
-        Raises:
-            FileNotFoundError: If the document doesn't exist
-            Exception: For other errors during extraction
-        """
-        try:
-            doc = fitz.open(doc_path)
-            text = ""
-            for page in doc:
-                text += page.get_text()
-            
-            doc.close()
-            
-            return text.strip()
-
-        except FileNotFoundError:
-            return f"Error: Document not found at path: {doc_path}"
-        except Exception as e:
-            return f"Error extracting text from document: {str(e)}"
-
-    def ask(self, doc_path, **kwargs):
+    def ask(self, file_path, **kwargs):
         """
         Summarize the provided document.
         
@@ -105,8 +73,7 @@ class DocSummarizer:
             str: The assistant's document summary
         """
         # Validate input
-        if not isinstance(doc_path, str):
+        if not isinstance(file_path, str):
             return "Error: Please provide a valid document path."
         
-        context = self.extract(doc_path)
-        return self.assistant.ask(question=context, image_path=None, **kwargs)
+        return self.assistant.ask(file_path=file_path, **kwargs)
