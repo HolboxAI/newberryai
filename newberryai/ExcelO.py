@@ -1,5 +1,3 @@
-import argparse
-import sys
 from newberryai.health_chat import HealthChat
 
 Sys_Prompt = """
@@ -22,7 +20,7 @@ class ExcelExp:
                 title="Excel Formula AI Assistant",
                 description="The toolkit offers flexibility in approaching Excel formula challenges, with structured methods ",
                 input_text_label="Enter problem, data range, conditions, and notes Here ",
-                input_image_label=None,  # Remove image input option
+                input_files_label=None,  # Remove file input option
                 output_label="Excel Formula"
             )
 
@@ -56,5 +54,5 @@ class ExcelExp:
         if not isinstance(question, str):
             return "Error: This AI assistant only accepts text questions."
         
-        # Use the ChatQA ask method with only the question parameter (no image)
-        return self.assistant.ask(question=question, image_path=None, **kwargs)
+        # Use the ChatQA ask method with only the question parameter (no file)
+        return self.assistant.ask(question=question, file_path=None, **kwargs)

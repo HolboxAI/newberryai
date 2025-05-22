@@ -140,14 +140,14 @@ def medical_bill_extractor_command(args):
     elif args.interactive:
         extract_bill.run_cli()
 
-    elif args.image_path:
-        # Validate that the image file exists
-        if not os.path.exists(args.image_path):
-            print(f"Error: Document file not found at path: {args.image_path}")
+    elif args.file_path:
+        # Validate that the file exists
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
             sys.exit(1)
         
-        print(f"Analyzing document: {args.image_path}")
-        response = extract_bill.analyze_document(args.image_path)
+        print(f"Analyzing document: {args.file_path}")
+        response = extract_bill.analyze_document(args.file_path)
         
         print("\nAnalysis:")
         print(response)
@@ -164,14 +164,14 @@ def pdf_summarizer_command(args):
     elif args.interactive:
         print("Starting interactive session for PDF Summarizer")
         summarizer.run_cli()
-    elif args.document_path:
+    elif args.file_path:
         # Validate that the document file exists
-        if not os.path.exists(args.document_path):
-            print(f"Error: Document file not found at path: {args.document_path}")
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
             sys.exit(1)
         
-        print(f"Analyzing document: {args.document_path}")
-        response = summarizer.ask(args.document_path)
+        print(f"Analyzing document: {args.file_path}")
+        response = summarizer.ask(args.file_path)
         
         print("\nSummary:")
         print(response)
@@ -305,7 +305,7 @@ def main():
 
     # Medical Bill Extractor Command 
     medical_bill_extractor_parser = subparsers.add_parser('bill_extract', help='Extract metadata from medical bills')
-    medical_bill_extractor_parser.add_argument("--image_path", "-img", type=str, help="Path to a document image to analyze")
+    medical_bill_extractor_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
     medical_bill_extractor_parser.add_argument("--gradio", "-g", action="store_true", 
                         help="Launch Gradio interface")
     medical_bill_extractor_parser.add_argument("--interactive", "-i", action="store_true",
@@ -318,7 +318,7 @@ def main():
 
     # PDF Summarizer Command
     pdf_summarizer_parser = subparsers.add_parser('pdf_summarizer', help='Extract and summarize content from PDF documents')
-    pdf_summarizer_parser.add_argument("--document_path", "-d", type=str, help="Path to the PDF document to analyze")
+    pdf_summarizer_parser.add_argument("--file_path", "-d", type=str, help="Path to the PDF document to analyze")
     pdf_summarizer_parser.add_argument("--gradio", "-g", action="store_true", 
                         help="Launch Gradio interface")
     pdf_summarizer_parser.add_argument("--interactive", "-i", action="store_true",

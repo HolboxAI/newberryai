@@ -14,6 +14,7 @@ A Python package for AI tools using LLM.
 - **PII Redactor AI assistant**: Analyze text and remove PII (personally identifiable information) from the text
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
+- **PDF Summarizer**: Extract and summarize content from PDF documents
 
 ## Installation
 
@@ -38,7 +39,6 @@ Available commands:
 - `coder` - Analyze code and help you with coding as debugger
 - `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
 - `PII_Red` - Analyze text and remove PII from the text using AI.
-
 - `PII_extract` - Analyze text and extract PII from the text using AI.
 
 ### CLI Tool
@@ -86,7 +86,7 @@ newberryai ExcelO --gradio
 
 ```sh
 # Analyze a specific document
-newberryai bill_extract --image_path /path/to/medical_bill.jpeg
+newberryai bill_extract --file_path /path/to/medical_bill.jpeg
 
 # Interactive CLI mode
 newberryai bill_extract --interactive
