@@ -13,6 +13,7 @@ A Python package for AI tools using LLM.
 - **Speech to speech assistant**: Real-time voice interactive assistant
 - **PII Redactor AI assistant**: Analyze text and remove PII (personally identifiable information) from the text
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
+- **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
 
 ## Installation
@@ -335,6 +336,32 @@ print(response)
 # Or launch the Gradio web interface
 # summarizer.start_gradio()
 ```
+#### EDA - Exploratory Data Analysis
+```python
+from newberryai import EDA
+eda = EDA()
+
+# Load your dataset (set current_data manually if needed)
+import pandas as pd
+eda.current_data = pd.read_csv("/path/to/your/data.csv")
+
+# Ask your analysis question (e.g. descriptive statistics, hypothesis testing)
+response = eda.ask("What is the average value of column 'Sales'?")
+print(response)
+
+# Generate visualizations (distribution, correlation, categorical, time series)
+eda.visualize_data("dist")  # distribution plots
+eda.visualize_data("corr")  # correlation heatmap
+eda.visualize_data("cat")   # categorical distributions
+eda.visualize_data("time")  # time series plots if datetime present
+
+# Alternatively, start CLI for interactive session
+# eda.run_cli()
+
+# Or launch Gradio interface
+# eda.start_gradio()
+
+```
 #### CLI Usage for PDF Summarizer
 
 ```sh
@@ -347,6 +374,18 @@ newberryai pdf_summarizer --interactive
 # Launch Gradio web interface
 newberryai pdf_summarizer --gradio
 ```
+#### CLI Usage for EDA 
+
+``` sh
+ #Analyze a CSV file interactively
+
+newberryai eda --file_path /path/to/your/data.csv --interactive
+
+ #Launch Gradio web interface
+newberryai eda --file_path /path/to/your/data.csv --gradio
+
+#Generate visualizations (after loading a file)
+newberryai eda --file_path /path/to/your/data.csv --visualize
 #### Troubleshooting: SSL Certificate Issues
 If you encounter SSL certificate errors while running NewberryAI, you can fix them by running:
 ```sh

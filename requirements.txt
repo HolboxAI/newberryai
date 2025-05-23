@@ -12,3 +12,7 @@ textual
 openai
 typing_extensions
 PyMuPDF
+pandas
+matplotlib
+seaborn
+
