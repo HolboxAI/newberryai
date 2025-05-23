@@ -194,34 +194,6 @@ def eda_command(args):
             print(f"Error: File not found at path: {args.file_path}")
             sys.exit(1)
         
-        print(f"Analyzing dataset: {args.file_path}")
-        eda.current_data = pd.read_csv(args.file_path)
-        response = eda.analyze_dataset()
-        
-        print("\nAnalysis:")
-        print(response)
-        
-        if args.visualize:
-            print("\nGenerating visualizations...")
-            eda.visualize_data()
-    else:
-        print("Check the argument via --help")
-def eda_command(args):
-    """Handle the EDA subcommand."""
-    eda = EDA()
-    
-    if args.gradio:
-        print("Launching Gradio interface for EDA Assistant")
-        eda.start_gradio()
-    elif args.interactive:
-        print("Starting interactive session for EDA Assistant")
-        eda.run_cli()
-    elif args.file_path:
-        # Validate that the file exists
-        if not os.path.exists(args.file_path):
-            print(f"Error: File not found at path: {args.file_path}")
-            sys.exit(1)
-        
         print(f"Loaded dataset: {args.file_path}")
         eda.current_data = pd.read_csv(args.file_path)
         print("You can now ask questions about the data using the interactive CLI (use --interactive) or Gradio (use --gradio).")
@@ -230,7 +202,6 @@ def eda_command(args):
             eda.visualize_data()
     else:
         print("Check the argument via --help")
-
 
 def main():
     """Command line interface for NewberryAI tools."""

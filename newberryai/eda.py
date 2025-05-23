@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
 from newberryai.health_chat import HealthChat
 
 
@@ -76,7 +75,6 @@ class EDA:
         self.sys_prompt = Sys_Prompt
         self.assistant = HealthChat(system_prompt=Sys_Prompt)
         self.current_data = None
-        self.analysis_results = {}
         plt.style.use('seaborn-v0_8')
     def start_gradio(self):
         self.assistant.launch_gradio(
@@ -311,5 +309,5 @@ Strong Correlations (|r| > 0.5):
             question = data_context + "\n" + question
         
         # Use the ChatQA ask method with only the question parameter
-        return self.assistant.ask(question=question, image_path=None, **kwargs)
+        return self.assistant.ask(question=question, file_path=None, **kwargs)
 
