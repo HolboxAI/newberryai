@@ -247,67 +247,8 @@ class EDA:
         Returns:
             str: The assistant's response
         """
-        # Enforce text-only input
-        if not isinstance(question, str):
-            return "Error: This EDA assistant only accepts text questions."
+        # Validate input
+        if not isinstance(file_path, str):
+            return "Error: Please provide a valid document path."
         
-        # If we have data loaded, include it in the context
-        if self.current_data is not None:
-            # Create a comprehensive data summary
-            data_info = {
-                "shape": self.current_data.shape,
-                "columns": list(self.current_data.columns),
-                "dtypes": self.current_data.dtypes.to_dict(),
-                "summary_stats": self.current_data.describe().to_dict(),
-                "categorical_stats": {
-                    col: {
-                        "unique_values": len(self.current_data[col].unique()),
-                        "most_common": self.current_data[col].value_counts().head(1).to_dict(),
-                        "value_counts": self.current_data[col].value_counts().to_dict()
-                    }
-                    for col in self.current_data.select_dtypes(include=['object']).columns
-                },
-                "correlations": self.current_data.select_dtypes(include=[np.number]).corr().to_dict(),
-                "missing_values": self.current_data.isnull().sum().to_dict(),
-                "numeric_stats": {
-                    col: {
-                        "mean": float(self.current_data[col].mean()),
-                        "std": float(self.current_data[col].std()),
-                        "min": float(self.current_data[col].min()),
-                        "max": float(self.current_data[col].max())
-                    }
-                    for col in self.current_data.select_dtypes(include=[np.number]).columns
-                }
-            }
-            
-            # Convert the data summary to a string format
-            data_context = f"""
-Current dataset information:
-- Shape: {data_info['shape']}
-- Columns: {', '.join(data_info['columns'])}
-
-Data Types:
-{chr(10).join(f'- {col}: {dtype}' for col, dtype in data_info['dtypes'].items())}
-
-Summary Statistics:
-{chr(10).join(f'- {col}: Mean={stats["mean"]:.2f}, Std={stats["std"]:.2f}, Min={stats["min"]:.2f}, Max={stats["max"]:.2f}' 
-    for col, stats in data_info['numeric_stats'].items())}
-
-Categorical Statistics:
-{chr(10).join(f'- {col}: {len(stats["value_counts"])} unique values, Most common: {list(stats["most_common"].keys())[0]} ({list(stats["most_common"].values())[0]} occurrences)'
-    for col, stats in data_info['categorical_stats'].items())}
-
-Missing Values:
-{chr(10).join(f'- {col}: {count} missing values' for col, count in data_info['missing_values'].items() if count > 0)}
-
-Strong Correlations (|r| > 0.5):
-{chr(10).join(f'- {col1} and {col2}: {corr:.2f}' 
-    for col1 in data_info['correlations'] 
-    for col2 in data_info['correlations'][col1] 
-    if col1 < col2 and abs(data_info['correlations'][col1][col2]) > 0.5)}
-"""
-            question = data_context + "\n" + question
-        
-        # Use the ChatQA ask method with only the question parameter
-        return self.assistant.ask(question=question, file_path=None, **kwargs)
-
+        return self.assistant.ask(file_path=file_path, **kwargs)
