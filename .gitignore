@@ -7,3 +7,5 @@ package_test/
 __pycache__/
 .DS_Store
 version.txt
+dataset.csv
+test.sh
