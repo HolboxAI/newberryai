@@ -2,7 +2,9 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator)
+import asyncio
+from pathlib import Path
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -203,6 +205,60 @@ def eda_command(args):
     else:
         print("Check the argument via --help")
 
+def video_generator_command(args):
+    """Handle the video generator subcommand."""
+    generator = VideoGenerator()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Video Generator")
+        generator.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Video Generator")
+        generator.run_cli()
+    elif args.text:
+        try:
+            # Create request with provided parameters
+            request = generator.VideoRequest(
+                text=args.text,
+                duration_seconds=args.duration,
+                fps=args.fps,
+                dimension=args.dimension,
+                seed=args.seed
+            )
+            
+            # Generate video
+            print("Starting video generation...")
+            loop = asyncio.get_event_loop()
+            response = loop.run_until_complete(generator.generate(request))
+            
+            print("Waiting for video generation to complete...")
+            final_response = loop.run_until_complete(generator.wait_for_completion(response.job_id))
+            
+            if final_response.status == "COMPLETED":
+                print(f"Video generated successfully!")
+                print(f"Video URL: {final_response.video_url}")
+                
+                # Download video if output path is specified
+                if args.output:
+                    output_path = Path(args.output)
+                    if not output_path.parent.exists():
+                        output_path.parent.mkdir(parents=True)
+                    
+                    # Download the video using the presigned URL
+                    import requests
+                    response = requests.get(final_response.video_url)
+                    with open(output_path, 'wb') as f:
+                        f.write(response.content)
+                    print(f"Video saved to: {output_path}")
+            else:
+                print(f"Video generation failed: {final_response.message}")
+                
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -306,6 +362,22 @@ def main():
     eda_parser.add_argument("--visualize", "-v", action="store_true",
                         help="Generate visualizations for the dataset")
     eda_parser.set_defaults(func=eda_command)
+
+    # Video Generator Command
+    video_parser = subparsers.add_parser('video', help='Generate videos from text using AI')
+    video_parser.add_argument("--text", "-t", type=str, help="Text prompt for video generation")
+    video_parser.add_argument("--duration", "-d", type=int, default=6, help="Duration in seconds (1-30)")
+    video_parser.add_argument("--fps", "-f", type=int, default=24, help="Frames per second (1-60)")
+    video_parser.add_argument("--dimension", "-dim", default="1280x720", 
+                          choices=["1280x720", "1920x1080", "3840x2160"],
+                          help="Video dimensions")
+    video_parser.add_argument("--seed", "-s", type=int, default=42, help="Random seed for generation")
+    video_parser.add_argument("--output", "-o", help="Output file path for the video")
+    video_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    video_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    video_parser.set_defaults(func=video_generator_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
