@@ -16,6 +16,7 @@ A Python package for AI tools using LLM.
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
+- **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 
 ## Installation
 
@@ -42,6 +43,7 @@ Available commands:
 - `PII_Red` - Analyze text and remove PII from the text using AI.
 - `PII_extract` - Analyze text and extract PII from the text using AI.
 - `video` - Generate videos from text descriptions
+- `image` - Generate images from text descriptions
 
 ### CLI Tool
 
@@ -150,6 +152,19 @@ newberryai video --interactive
 
 # Launch Gradio web interface
 newberryai video --gradio
+```
+
+#### Image Generator
+
+```sh
+# Generate images with specific parameters
+newberryai image --text "A beautiful sunset over the ocean" --width 1024 --height 1024 --number_of_images 1 --quality premium
+
+# Interactive CLI mode
+newberryai image --interactive
+
+# Launch Gradio web interface
+newberryai image --gradio
 ```
 
 ### Python Module

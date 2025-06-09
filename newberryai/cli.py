@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator)
 import asyncio
 from pathlib import Path
 
@@ -259,6 +259,46 @@ def video_generator_command(args):
     else:
         print("Check the argument via --help")
 
+def image_generator_command(args):
+    """Handle the image generator subcommand."""
+    generator = ImageGenerator()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Image Generator")
+        generator.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Image Generator")
+        generator.run_cli()
+    elif args.text:
+        try:
+            # Create request with provided parameters
+            request = generator.ImageRequest(
+                text=args.text,
+                width=args.width,
+                height=args.height,
+                number_of_images=args.number_of_images,
+                cfg_scale=args.cfg_scale,
+                seed=args.seed,
+                quality=args.quality
+            )
+            
+            # Generate images
+            print("Generating images...")
+            loop = asyncio.get_event_loop()
+            response = loop.run_until_complete(generator.generate(request))
+            
+            print(f"\nImages generated successfully!")
+            print(f"Images saved in: {response.local_path}")
+            print("\nImage URLs:")
+            for url in response.images:
+                print(url)
+                
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -378,6 +418,23 @@ def main():
     video_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     video_parser.set_defaults(func=video_generator_command)
+
+    # Image Generator Command
+    image_parser = subparsers.add_parser('image', help='Generate images from text using AI')
+    image_parser.add_argument("--text", "-t", type=str, help="Text prompt for image generation")
+    image_parser.add_argument("--width", "-w", type=int, default=1024, help="Width of the image (512-1024)")
+    image_parser.add_argument("--height", "-h", type=int, default=1024, help="Height of the image (512-1024)")
+    image_parser.add_argument("--number_of_images", "-n", type=int, default=1, help="Number of images to generate (1-4)")
+    image_parser.add_argument("--cfg_scale", "-c", type=int, default=8, help="CFG scale (1-20)")
+    image_parser.add_argument("--seed", "-s", type=int, default=42, help="Random seed for generation")
+    image_parser.add_argument("--quality", "-q", default="standard", 
+                          choices=["standard", "premium"],
+                          help="Quality of the generated image")
+    image_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    image_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    image_parser.set_defaults(func=image_generator_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
