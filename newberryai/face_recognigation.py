@@ -1,7 +1,7 @@
 import boto3
 import cv2
 import os
-import logging
+
 import gradio as gr
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -11,13 +11,6 @@ import numpy as np
 
 # Load environment variables
 load_dotenv()
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 class FaceRequest(BaseModel):
     """Pydantic model for face recognition request parameters."""
@@ -46,9 +39,9 @@ class FaceRecognition:
         # Create collection if it doesn't exist
         try:
             self.rekognition_client.create_collection(CollectionId=self.face_collection_id)
-            logger.info(f"Created new face collection: {self.face_collection_id}")
+            
         except self.rekognition_client.exceptions.ResourceAlreadyExistsException:
-            logger.info(f"Using existing face collection: {self.face_collection_id}")
+            pass
 
     def add_to_collect(self, request: FaceRequest) -> FaceResponse:
         """
@@ -98,7 +91,6 @@ class FaceRecognition:
             )
         
         except Exception as e:
-            logger.error(f"Error adding face to collection: {str(e)}")
             return FaceResponse(
                 success=False,
                 message=f"Error adding face to collection: {str(e)}"
@@ -154,7 +146,6 @@ class FaceRecognition:
             )
         
         except Exception as e:
-            logger.error(f"Error recognizing face: {str(e)}")
             return FaceResponse(
                 success=False,
                 message=f"Error recognizing face: {str(e)}"
