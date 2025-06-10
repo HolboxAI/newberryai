@@ -12,3 +12,4 @@ from .pdf_summarizer import DocSummarizer
 from .eda import EDA
 from .video_generator import VideoGenerator
 from .image_generator import ImageGenerator
+from .face_recognigation import FaceRecognition

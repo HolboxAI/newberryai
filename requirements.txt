@@ -15,4 +15,4 @@ PyMuPDF
 pandas
 matplotlib
 seaborn
-
+python-dotenv
