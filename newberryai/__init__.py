@@ -10,3 +10,5 @@ from .PII_masking import PII_Redaction
 from .PII_extractor import PII_extraction
 from .pdf_summarizer import DocSummarizer
 from .eda import EDA
+from .video_generator import VideoGenerator
+from .image_generator import ImageGenerator

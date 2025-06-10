@@ -15,6 +15,8 @@ A Python package for AI tools using LLM.
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
+- **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
+- **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 
 ## Installation
 
@@ -40,6 +42,8 @@ Available commands:
 - `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
 - `PII_Red` - Analyze text and remove PII from the text using AI.
 - `PII_extract` - Analyze text and extract PII from the text using AI.
+- `video` - Generate videos from text descriptions
+- `image` - Generate images from text descriptions
 
 ### CLI Tool
 
@@ -135,6 +139,32 @@ newberryai PII_extract --gradio
 ```sh
 # Launch the real-time speech-to-speech application
 newberryai speech_to_speech
+```
+
+#### Video Generator
+
+```sh
+# Generate a video with specific parameters
+newberryai video --text "A beautiful sunset over the ocean" --duration 10 --fps 30 --dimension 1920x1080 --output video.mp4
+
+# Interactive CLI mode
+newberryai video --interactive
+
+# Launch Gradio web interface
+newberryai video --gradio
+```
+
+#### Image Generator
+
+```sh
+# Generate images with specific parameters
+newberryai image --text "A beautiful sunset over the ocean" --width 1024 --height 1024 --number_of_images 1 --quality premium
+
+# Interactive CLI mode
+newberryai image --interactive
+
+# Launch Gradio web interface
+newberryai image --gradio
 ```
 
 ### Python Module
@@ -265,7 +295,7 @@ return average
 
 numbers = [10, 20, 30, 40, 50]
 result = calculate_average(numbers)
-print(“The average is:”, results)""")
+print("The average is:", results)""")
 print(response)
 
 # Alternatively, launch interactive CLI
@@ -448,6 +478,8 @@ To use the AWS-powered features, you need to set up the following:
 2. AWS IAM role with access to required services
 3. S3 buckets for input and output data
 4. AWS credentials configured in your environment
+5. Amazon Bedrock access for video generation
+6. S3 bucket for video storage
 
 ## License
 
