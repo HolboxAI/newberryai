@@ -3,6 +3,7 @@ import sys
 import os 
 import pandas as pd
 from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition)
+from newberryai.face_recognigation import FaceRequest
 import asyncio
 from pathlib import Path
 
@@ -315,10 +316,10 @@ def face_recognition_command(args):
                 if not args.name:
                     print("Error: Name is required when adding a face")
                     sys.exit(1)
-                request = face_recognition.FaceRequest(image_path=args.image_path, name=args.name)
+                request = FaceRequest(image_path=args.image_path, name=args.name)
                 response = face_recognition.add_to_collect(request)
             else:
-                request = face_recognition.FaceRequest(image_path=args.image_path)
+                request = FaceRequest(image_path=args.image_path)
                 response = face_recognition.recognize_image(request)
             
             print("\nResult:")

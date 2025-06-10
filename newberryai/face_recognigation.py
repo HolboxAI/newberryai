@@ -4,7 +4,6 @@ import os
 
 import gradio as gr
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from fastapi import HTTPException
 import numpy as np
@@ -12,18 +11,21 @@ import numpy as np
 # Load environment variables
 load_dotenv()
 
-class FaceRequest(BaseModel):
-    """Pydantic model for face recognition request parameters."""
-    image_path: str = Field(..., description="Path to the image file")
-    name: Optional[str] = Field(None, description="Name to associate with the face (for add_to_collect)")
+class FaceRequest:
+    """Class for face recognition request parameters."""
+    def __init__(self, image_path: str, name: Optional[str] = None):
+        self.image_path = image_path
+        self.name = name
 
-class FaceResponse(BaseModel):
-    """Pydantic model for face recognition response."""
-    success: bool
-    message: str
-    name: Optional[str] = None
-    confidence: Optional[float] = None
-    face_id: Optional[str] = None
+class FaceResponse:
+    """Class for face recognition response."""
+    def __init__(self, success: bool, message: str, name: Optional[str] = None, 
+                 confidence: Optional[float] = None, face_id: Optional[str] = None):
+        self.success = success
+        self.message = message
+        self.name = name
+        self.confidence = confidence
+        self.face_id = face_id
 
 class FaceRecognition:
     """
