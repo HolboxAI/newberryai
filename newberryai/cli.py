@@ -1,7 +1,8 @@
 import argparse
 import sys
 import os 
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer)
+import pandas as pd
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA)
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -177,6 +178,31 @@ def pdf_summarizer_command(args):
     else:
         print("Check the argument via --help")
 
+def eda_command(args):
+    """Handle the EDA subcommand."""
+    eda = EDA()
+    
+    if args.gradio:
+        print("Launching Gradio interface for EDA Assistant")
+        eda.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for EDA Assistant")
+        eda.run_cli()
+    elif args.file_path:
+        # Validate that the file exists
+        if not os.path.exists(args.file_path):
+            print(f"Error: File not found at path: {args.file_path}")
+            sys.exit(1)
+        
+        print(f"Loaded dataset: {args.file_path}")
+        eda.current_data = pd.read_csv(args.file_path)
+        print("You can now ask questions about the data using the interactive CLI (use --interactive) or Gradio (use --gradio).")
+        if args.visualize:
+            print("\nGenerating visualizations...")
+            eda.visualize_data()
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -269,6 +295,17 @@ def main():
     pdf_summarizer_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     pdf_summarizer_parser.set_defaults(func=pdf_summarizer_command)
+
+    # EDA Command
+    eda_parser = subparsers.add_parser('eda', help='Perform Exploratory Data Analysis on datasets')
+    eda_parser.add_argument("--file_path", "-f", type=str, help="Path to the CSV file to analyze")
+    eda_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    eda_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    eda_parser.add_argument("--visualize", "-v", action="store_true",
+                        help="Generate visualizations for the dataset")
+    eda_parser.set_defaults(func=eda_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

@@ -8,6 +8,8 @@ from typing import Optional
 import pandas as pd
 import fitz
 from PIL import Image
+import numpy as np
+from datetime import datetime
 
 class HealthChat:
 
@@ -110,6 +112,76 @@ class HealthChat:
         except Exception as e:
             return f"Error extracting text from document: {str(e)}"
 
+    def _process_csv(self, file_path: str) -> str:
+        """
+        Process a CSV file and generate comprehensive analysis.
+        
+        Args:
+            file_path (str): Path to the CSV file
+            
+        Returns:
+            str: Analysis of the CSV file including statistics and insights
+        """
+        try:
+            # Read the CSV file
+            df = pd.read_csv(file_path)
+            
+            # Basic information
+            analysis = []
+            analysis.append(f"CSV File Analysis:")
+            analysis.append(f"Number of rows: {len(df)}")
+            analysis.append(f"Number of columns: {len(df.columns)}")
+            analysis.append(f"Columns: {', '.join(df.columns)}")
+            
+            # Data types
+            analysis.append("\nData Types:")
+            for col, dtype in df.dtypes.items():
+                analysis.append(f"{col}: {dtype}")
+            
+            # Missing values
+            missing_values = df.isnull().sum()
+            if missing_values.any():
+                analysis.append("\nMissing Values:")
+                for col, count in missing_values[missing_values > 0].items():
+                    analysis.append(f"{col}: {count} missing values")
+            
+            # Numeric columns analysis
+            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            if len(numeric_cols) > 0:
+                analysis.append("\nNumeric Columns Statistics:")
+                stats = df[numeric_cols].describe()
+                for col in numeric_cols:
+                    analysis.append(f"\n{col}:")
+                    analysis.append(f"  Mean: {stats[col]['mean']:.2f}")
+                    analysis.append(f"  Std: {stats[col]['std']:.2f}")
+                    analysis.append(f"  Min: {stats[col]['min']:.2f}")
+                    analysis.append(f"  Max: {stats[col]['max']:.2f}")
+            
+            # Categorical columns analysis
+            cat_cols = df.select_dtypes(include=['object']).columns
+            if len(cat_cols) > 0:
+                analysis.append("\nCategorical Columns Analysis:")
+                for col in cat_cols:
+                    value_counts = df[col].value_counts()
+                    analysis.append(f"\n{col}:")
+                    analysis.append(f"  Unique values: {len(value_counts)}")
+                    analysis.append(f"  Most common: {value_counts.index[0]} ({value_counts.iloc[0]} occurrences)")
+            
+            # Correlation analysis for numeric columns
+            if len(numeric_cols) > 1:
+                corr_matrix = df[numeric_cols].corr()
+                analysis.append("\nCorrelation Analysis:")
+                for i, col1 in enumerate(numeric_cols):
+                    for col2 in numeric_cols[i+1:]:
+                        corr = corr_matrix.loc[col1, col2]
+                        if abs(corr) > 0.5:  # Only show strong correlations
+                            analysis.append(f"  {col1} and {col2}: {corr:.2f}")
+            
+            return "\n".join(analysis)
+            
+        except Exception as e:
+            return f"Error processing CSV file: {str(e)}"
+
     def ask(self, question: Optional[str] = None, file_path: Optional[str] = None, return_full_response: bool = False) -> str:
         """
         Send a question or a file (image, PDF, CSV, etc.) or both to Chatbot and get a response.
@@ -167,18 +239,17 @@ class HealthChat:
                             "type": "text",
                             "text": "Please summarize this PDF document."
                         })
-                elif ext == ".csv": # Example to be completed by Harshika
-                    # Extract CSV content as dataframe
-                    df = pd.read_csv(file_path)
-                    csv_preview = df.head(10).to_csv(index=False)
+                elif ext == ".csv":
+                    # Process CSV file
+                    csv_analysis = self._process_csv(file_path)
                     content.append({
                         "type": "text",
-                        "text": f"CSV content preview:\n{csv_preview}"
+                        "text": f"CSV Analysis:\n{csv_analysis}"
                     })
                     if not question:
                         content.insert(0, {
                             "type": "text",
-                            "text": "Please analyze this CSV file."
+                            "text": "Please analyze this CSV file and provide insights."
                         })
                 else:
                     content.append({
