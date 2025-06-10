@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition)
 import asyncio
 from pathlib import Path
 
@@ -299,6 +299,44 @@ def image_generator_command(args):
     else:
         print("Check the argument via --help")
 
+def face_recognition_command(args):
+    """Handle the face recognition subcommand."""
+    face_recognition = FaceRecognition()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Face Recognition")
+        face_recognition.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Face Recognition")
+        face_recognition.run_cli()
+    elif args.image_path:
+        try:
+            if args.add:
+                if not args.name:
+                    print("Error: Name is required when adding a face")
+                    sys.exit(1)
+                request = face_recognition.FaceRequest(image_path=args.image_path, name=args.name)
+                response = face_recognition.add_to_collect(request)
+            else:
+                request = face_recognition.FaceRequest(image_path=args.image_path)
+                response = face_recognition.recognize_image(request)
+            
+            print("\nResult:")
+            print(response.message)
+            if response.success:
+                if response.name:
+                    print(f"Name: {response.name}")
+                if response.confidence:
+                    print(f"Confidence: {response.confidence:.2f}%")
+                if response.face_id:
+                    print(f"Face ID: {response.face_id}")
+                    
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -423,7 +461,7 @@ def main():
     image_parser = subparsers.add_parser('image', help='Generate images from text using AI')
     image_parser.add_argument("--text", "-t", type=str, help="Text prompt for image generation")
     image_parser.add_argument("--width", "-w", type=int, default=1024, help="Width of the image (512-1024)")
-    image_parser.add_argument("--height", "-h", type=int, default=1024, help="Height of the image (512-1024)")
+    image_parser.add_argument("--height", "-ht", type=int, default=1024, help="Height of the image (512-1024)")
     image_parser.add_argument("--number_of_images", "-n", type=int, default=1, help="Number of images to generate (1-4)")
     image_parser.add_argument("--cfg_scale", "-c", type=int, default=8, help="CFG scale (1-20)")
     image_parser.add_argument("--seed", "-s", type=int, default=42, help="Random seed for generation")
@@ -435,6 +473,17 @@ def main():
     image_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     image_parser.set_defaults(func=image_generator_command)
+
+    # Face Recognition Command
+    face_parser = subparsers.add_parser('face', help='Face recognition using AWS Rekognition')
+    face_parser.add_argument("--image_path", "-i", type=str, help="Path to the image file")
+    face_parser.add_argument("--add", "-a", action="store_true", help="Add face to collection")
+    face_parser.add_argument("--name", "-n", type=str, help="Name to associate with the face (required for add)")
+    face_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    face_parser.add_argument("--interactive", "-int", action="store_true",
+                        help="Run in interactive CLI mode")
+    face_parser.set_defaults(func=face_recognition_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

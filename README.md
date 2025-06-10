@@ -17,6 +17,7 @@ A Python package for AI tools using LLM.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
 - **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
+- **Face Recognition**: Add and recognize faces using AWS Rekognition
 
 ## Installation
 
@@ -44,6 +45,7 @@ Available commands:
 - `PII_extract` - Analyze text and extract PII from the text using AI.
 - `video` - Generate videos from text descriptions
 - `image` - Generate images from text descriptions
+- `face` - Add and recognize faces using AWS Rekognition
 
 ### CLI Tool
 
@@ -165,6 +167,22 @@ newberryai image --interactive
 
 # Launch Gradio web interface
 newberryai image --gradio
+```
+
+#### Face Recognition
+
+```sh
+# Add a face to the collection
+newberryai face --image_path "/path/to/your/image.jpg" --add --name "Person Name"
+
+# Recognize a face in an image
+newberryai face --image_path "/path/to/another/image.jpg"
+
+# Interactive CLI mode
+newberryai face --interactive
+
+# Launch Gradio web interface
+newberryai face --gradio
 ```
 
 ### Python Module
@@ -424,6 +442,37 @@ export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
 ```
 This ensures that your system is using the latest SSL certificates.
 
+#### Face Recognition
+
+```python
+from newberryai import FaceRecognition
+
+# Initialize the Face Recognition system
+face_recognition = FaceRecognition()
+
+# Example: Add a face to the collection
+add_response = face_recognition.add_to_collect(
+    image_path="/path/to/your/image.jpg",
+    name="Person Name"
+)
+print(add_response.message)
+if add_response.success:
+    print(f"Face ID: {add_response.face_id}")
+
+# Example: Recognize a face in an image
+recognize_response = face_recognition.recognize_image(
+    image_path="/path/to/another/image.jpg"
+)
+print(recognize_response.message)
+if recognize_response.success:
+    print(f"Recognized: {recognize_response.name} (Confidence: {recognize_response.confidence:.2f}%)")
+
+# Alternatively, launch interactive CLI
+# face_recognition.run_cli()
+
+# Or launch the Gradio web interface
+# face_recognition.start_gradio()
+```
 
 
 ---
@@ -469,6 +518,7 @@ echo $OPENAI_API_KEY
   - Amazon S3
   - AWS HealthScribe
   - AWS IAM
+  - AWS Rekognition
 
 ## AWS Configuration
 
@@ -480,6 +530,7 @@ To use the AWS-powered features, you need to set up the following:
 4. AWS credentials configured in your environment
 5. Amazon Bedrock access for video generation
 6. S3 bucket for video storage
+7. AWS Rekognition collection for face recognition
 
 ## License
 
