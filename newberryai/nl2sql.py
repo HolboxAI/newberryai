@@ -299,16 +299,12 @@ Return only the SQL query without any explanation."""
                 return (
                     response.generated_sql,
                     json.dumps(response.data, indent=2, default=decimal_to_float),
-                    response.best_chart,
-                    json.dumps(response.selected_columns, indent=2),
                     response.summary
                 )
             except Exception as e:
                 return (
                     None,
                     "[]",
-                    None,
-                    "{}",
                     f"Error: {str(e)}"
                 )
 
@@ -333,14 +329,12 @@ Return only the SQL query without any explanation."""
                 with gr.Column():
                     sql_output = gr.Textbox(label="Generated SQL Query")
                     data_output = gr.Textbox(label="Query Results")
-                    chart_output = gr.Textbox(label="Suggested Chart Type")
-                    columns_output = gr.Textbox(label="Selected Columns")
                     summary_output = gr.Textbox(label="Summary")
             
             process_button.click(
                 fn=process_query_interface,
                 inputs=[question, host, user, password, database, port],
-                outputs=[sql_output, data_output, chart_output, columns_output, summary_output]
+                outputs=[sql_output, data_output, summary_output]
             )
         
         return interface.launch(share=True)
@@ -391,8 +385,6 @@ Return only the SQL query without any explanation."""
                 print("\nResults:")
                 print(f"Generated SQL: {response.generated_sql}")
                 print(f"Data: {json.dumps(response.data, indent=2)}")
-                print(f"Suggested Chart: {response.best_chart}")
-                print(f"Selected Columns: {json.dumps(response.selected_columns, indent=2)}")
                 print(f"Summary: {response.summary}")
                 
             except Exception as e:
