@@ -18,6 +18,7 @@ A Python package for AI tools using LLM.
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
 - **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 - **Face Recognition**: Add and recognize faces using AWS Rekognition
+- **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
 
 ## Installation
 
@@ -46,6 +47,7 @@ Available commands:
 - `video` - Generate videos from text descriptions
 - `image` - Generate images from text descriptions
 - `face` - Add and recognize faces using AWS Rekognition
+- `nl2sql` - Generate SQL queries from natural language
 
 ### CLI Tool
 
@@ -63,6 +65,15 @@ newberryai healthscribe --file_path conversation.wav \
                        --input_s3_bucket my-input-bucket \
                        --output_s3_bucket my-output-bucket \
                        --s3_key s3-key
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```sh
+# Launch Gradio web interface
+newberryai nl2sql --gradio
+
+# Interactive CLI mode
+newberryai nl2sql --interactive
 ```
 #### Differential Diagnosis Assistant
 
@@ -239,6 +250,49 @@ else:
     # Print the compliance check result
     print(f"Compliant: {'Yes' if result['compliant'] else 'No'}")
     print(f"Analysis: {result['analysis']}")
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```python
+from newberryai import NL2SQL, DatabaseConfig, NL2SQLRequest
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Initialize the NL2SQL processor
+nl2sql_processor = NL2SQL()
+
+# Example: Connect to database and process a query
+try:
+    db_config = DatabaseConfig(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 3306))
+    )
+    nl2sql_processor.connect_to_database(db_config)
+    
+    request = NL2SQLRequest(
+        question="Show me the total sales by region"
+    )
+    
+    response = nl2sql_processor.process_query(request)
+    
+    print(f"Generated SQL: {response.generated_sql}")
+    print(f"Data: {response.data}")
+    print(f"Suggested Chart: {response.best_chart}")
+    print(f"Summary: {response.summary}")
+
+except Exception as e:
+    print(f"Error: {e}")
+
+# Alternatively, launch interactive CLI
+# nl2sql_processor.run_cli()
+
+# Or launch the Gradio web interface
+# nl2sql_processor.start_gradio()
 ```
 #### Differential Diagnosis Assistant
 
