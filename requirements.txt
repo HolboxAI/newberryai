@@ -16,3 +16,5 @@ pandas
 matplotlib
 seaborn
 python-dotenv
+mysql-connector-python
+pydantic

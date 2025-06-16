@@ -2,10 +2,11 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL)
 from newberryai.face_recognigation import FaceRequest
 import asyncio
 from pathlib import Path
+import json
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -338,6 +339,54 @@ def face_recognition_command(args):
     else:
         print("Check the argument via --help")
 
+def nl2sql_command(args):
+    """Handle the NL2SQL subcommand."""
+    nl2sql = NL2SQL()
+    
+    if args.gradio:
+        print("Launching Gradio interface for NL2SQL")
+        nl2sql.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for NL2SQL")
+        nl2sql.run_cli()
+    elif args.question:
+        # Check if database credentials are provided
+        if not all([args.user, args.password, args.database]):
+            print("Error: Database credentials (--user, --password, --database) are required when using --question")
+            sys.exit(1)
+            
+        try:
+            # Create database config
+            db_config = nl2sql.DatabaseConfig(
+                host=args.host,
+                user=args.user,
+                password=args.password,
+                database=args.database,
+                port=args.port
+            )
+            
+            # Create request
+            request = nl2sql.NL2SQLRequest(
+                question=args.question,
+                db_config=db_config
+            )
+            
+            # Process query
+            response = nl2sql.process_query(request)
+            
+            print("\nResults:")
+            print(f"Generated SQL: {response.generated_sql}")
+            print(f"Data: {json.dumps(response.data, indent=2)}")
+            print(f"Suggested Chart: {response.best_chart}")
+            print(f"Selected Columns: {json.dumps(response.selected_columns, indent=2)}")
+            print(f"Summary: {response.summary}")
+            
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -485,6 +534,20 @@ def main():
     face_parser.add_argument("--interactive", "-int", action="store_true",
                         help="Run in interactive CLI mode")
     face_parser.set_defaults(func=face_recognition_command)
+
+    # NL2SQL Command
+    nl2sql_parser = subparsers.add_parser('nl2sql', help='Convert natural language to SQL queries')
+    nl2sql_parser.add_argument("--question", "-q", type=str, help="Natural language question to convert to SQL")
+    nl2sql_parser.add_argument("--host", type=str, default="localhost", help="Database host")
+    nl2sql_parser.add_argument("--user", type=str, help="Database username")
+    nl2sql_parser.add_argument("--password", type=str, help="Database password")
+    nl2sql_parser.add_argument("--database", type=str, help="Database name")
+    nl2sql_parser.add_argument("--port", type=int, default=3306, help="Database port")
+    nl2sql_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    nl2sql_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    nl2sql_parser.set_defaults(func=nl2sql_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
