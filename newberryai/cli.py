@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor)
 from newberryai.face_recognigation import FaceRequest
 import asyncio
 from pathlib import Path
@@ -387,6 +387,36 @@ def nl2sql_command(args):
     else:
         print("Check the argument via --help")
 
+def pdf_extraction_command(args):
+    """Handle the PDF extraction subcommand."""
+    extractor = PDFExtractor()
+    
+    if args.gradio:
+        print("Launching Gradio interface for PDF Extraction")
+        extractor.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for PDF Extraction")
+        extractor.run_cli()
+    elif args.file_path:
+        # Validate that the file exists
+        if not os.path.exists(args.file_path):
+            print(f"Error: PDF file not found at path: {args.file_path}")
+            sys.exit(1)
+        
+        print(f"Processing PDF: {args.file_path}")
+        loop = asyncio.get_event_loop()
+        pdf_id = loop.run_until_complete(extractor.process_pdf(args.file_path))
+        
+        if args.question:
+            response = loop.run_until_complete(extractor.ask_question(pdf_id, args.question))
+            print("\nAnswer:")
+            print(response["answer"])
+            print("\nSource Chunks:")
+            for chunk in response["source_chunks"]:
+                print(f"\n---\n{chunk}")
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -548,6 +578,16 @@ def main():
     nl2sql_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     nl2sql_parser.set_defaults(func=nl2sql_command)
+
+    # PDF Extraction Command
+    pdf_extraction_parser = subparsers.add_parser('pdf_extract', help='Extract and query content from PDF documents')
+    pdf_extraction_parser.add_argument("--file_path", "-f", type=str, help="Path to the PDF document to analyze")
+    pdf_extraction_parser.add_argument("--question", "-q", type=str, help="Question to ask about the PDF content")
+    pdf_extraction_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    pdf_extraction_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    pdf_extraction_parser.set_defaults(func=pdf_extraction_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

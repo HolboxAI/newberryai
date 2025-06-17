@@ -14,3 +14,4 @@ from .video_generator import VideoGenerator
 from .image_generator import ImageGenerator
 from .face_recognigation import FaceRecognition
 from .nl2sql import NL2SQL
+from .pdf_extraction import PDFExtractor

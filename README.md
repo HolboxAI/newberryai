@@ -15,6 +15,7 @@ A Python package for AI tools using LLM.
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
+- **PDF Extractor**: Extract and query content from PDF documents using embeddings and semantic search
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
 - **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 - **Face Recognition**: Add and recognize faces using AWS Rekognition
@@ -194,6 +195,44 @@ newberryai face --interactive
 
 # Launch Gradio web interface
 newberryai face --gradio
+```
+
+#### PDF Extractor
+
+```python
+from newberryai import PDFExtractor
+
+# Initialize the PDF Extractor
+extractor = PDFExtractor()
+
+# Process a PDF file
+pdf_id = await extractor.process_pdf("/path/to/your/document.pdf")
+
+# Ask questions about the PDF content
+response = await extractor.ask_question(pdf_id, "What are the main points discussed in the document?")
+print(response["answer"])
+print("\nSource Chunks:")
+for chunk in response["source_chunks"]:
+    print(f"\n---\n{chunk}")
+
+# Alternatively, launch interactive CLI
+# extractor.run_cli()
+
+# Or launch the Gradio web interface
+# extractor.start_gradio()
+```
+
+#### CLI Usage for PDF Extractor
+
+```sh
+# Process a PDF and ask a question
+newberryai pdf_extract --file_path /path/to/your/document.pdf --question "What are the main points?"
+
+# Interactive CLI mode
+newberryai pdf_extract --interactive
+
+# Launch Gradio web interface
+newberryai pdf_extract --gradio
 ```
 
 ### Python Module
