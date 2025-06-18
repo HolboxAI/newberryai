@@ -2,8 +2,9 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
 from newberryai.face_recognigation import FaceRequest
+from newberryai.face_detection import VideoRequest
 import asyncio
 from pathlib import Path
 import json
@@ -417,6 +418,58 @@ def pdf_extraction_command(args):
     else:
         print("Check the argument via --help")
 
+def face_detection_command(args):
+    """Handle the face detection subcommand."""
+    face_detector = FaceDetection()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Face Detection")
+        face_detector.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Face Detection")
+        face_detector.run_cli()
+    elif args.add_image and args.name:
+        try:
+            # Add face to collection
+            print(f"Adding face to collection: {args.name}")
+            response = face_detector.add_face_to_collection(args.add_image, args.name)
+            
+            print("\nResult:")
+            print(response.message)
+            if response.success:
+                print(f"Face ID: {response.face_id}")
+                    
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    elif args.video_path:
+        try:
+            # Create request with provided parameters
+            request = VideoRequest(
+                video_path=args.video_path,
+                max_frames=args.max_frames
+            )
+            
+            # Process video
+            print("Processing video...")
+            results = face_detector.process_video(request)
+            
+            print("\nDetection Results:")
+            for detection in results:
+                print(f"\nTimestamp: {detection['timestamp']}s")
+                if detection.get('external_image_id'):
+                    print(f"Matched Face: {detection['external_image_id']}")
+                    print(f"Face ID: {detection['face_id']}")
+                    print(f"Confidence: {detection['confidence']:.2f}%")
+                else:
+                    print("No match found in collection")
+                    
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -588,6 +641,18 @@ def main():
     pdf_extraction_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     pdf_extraction_parser.set_defaults(func=pdf_extraction_command)
+
+    # Face Detection Command
+    face_detect_parser = subparsers.add_parser('face_detect', help='Process videos and detect faces using AWS Rekognition')
+    face_detect_parser.add_argument("--video_path", "-v", type=str, help="Path to the video file")
+    face_detect_parser.add_argument("--max_frames", "-m", type=int, default=20, help="Maximum number of frames to process")
+    face_detect_parser.add_argument("--add_image", "-a", type=str, help="Path to the image to add to collection")
+    face_detect_parser.add_argument("--name", "-n", type=str, help="Name to associate with the image")
+    face_detect_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    face_detect_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    face_detect_parser.set_defaults(func=face_detection_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

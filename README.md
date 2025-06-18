@@ -19,6 +19,7 @@ A Python package for AI tools using LLM.
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
 - **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 - **Face Recognition**: Add and recognize faces using AWS Rekognition
+- **Face Detection**: Process videos and detect faces using AWS Rekognition
 - **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
 
 ## Installation
@@ -48,6 +49,7 @@ Available commands:
 - `video` - Generate videos from text descriptions
 - `image` - Generate images from text descriptions
 - `face` - Add and recognize faces using AWS Rekognition
+- `face_detect` - Process videos and detect faces using AWS Rekognition
 - `nl2sql` - Generate SQL queries from natural language
 
 ### CLI Tool
@@ -195,6 +197,58 @@ newberryai face --interactive
 
 # Launch Gradio web interface
 newberryai face --gradio
+```
+
+#### Face Detection
+
+```python
+from newberryai import FaceDetection
+
+# Initialize the Face Detection system
+face_detector = FaceDetection()
+
+# Add a face to the collection
+response = face_detector.add_face_to_collection("/path/to/face.jpg", "Person Name")
+if response.success:
+    print(f"Face added successfully: {response.face_id}")
+
+# Process a video file and detect faces
+results = face_detector.process_video(VideoRequest(
+    video_path="/path/to/your/video.mp4",
+    max_frames=20
+))
+
+# Print detection results
+for detection in results:
+    print(f"Timestamp: {detection['timestamp']}s")
+    if detection.get('external_image_id'):
+        print(f"Matched Face: {detection['external_image_id']}")
+        print(f"Face ID: {detection['face_id']}")
+        print(f"Confidence: {detection['confidence']:.2f}%")
+    else:
+        print("No match found in collection")
+
+# Alternatively, launch interactive CLI
+# face_detector.run_cli()
+
+# Or launch the Gradio web interface
+# face_detector.start_gradio()
+```
+
+#### CLI Usage for Face Detection
+
+```sh
+# Add a face to the collection
+newberryai face_detect --add_image /path/to/face.jpg --name "Person Name"
+
+# Process a video file
+newberryai face_detect --video_path /path/to/your/video.mp4 --max_frames 20
+
+# Interactive CLI mode
+newberryai face_detect --interactive
+
+# Launch Gradio web interface
+newberryai face_detect --gradio
 ```
 
 #### PDF Extractor
