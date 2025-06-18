@@ -15,7 +15,7 @@ from .image_generator import ImageGenerator
 from .face_recognigation import FaceRecognition
 from .nl2sql import NL2SQL
 from .pdf_extraction import PDFExtractor
-from .face_detection import FaceDetectionfrom 
+from .face_detection import FaceDetection
 from .virtual_tryon import VirtualTryOn
 from .agent import Agent
 from .function_registry import FunctionRegistry

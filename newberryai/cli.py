@@ -526,7 +526,10 @@ def agent_command(args):
     """Handle agent-related commands"""
     agent = Agent()
     
-    if args.interactive:
+    if args.gradio:
+        print("Launching Gradio interface for Agent")
+        agent.start_gradio()
+    elif args.interactive:
         print("Starting interactive session for Agent")
         agent.run_cli()
     elif args.query:
@@ -736,6 +739,7 @@ def main():
 
     # Add agent subparser
     agent_parser = subparsers.add_parser('agent', help='Run the agent')
+    agent_parser.add_argument('--gradio', '-g', action='store_true', help='Launch Gradio interface')
     agent_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive mode')
     agent_parser.add_argument('--query', '-q', type=str, help='Process a single query')
 

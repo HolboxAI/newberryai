@@ -3,6 +3,7 @@ import json
 import inspect
 from newberryai.health_chat import HealthChat
 from newberryai.function_registry import FunctionRegistry
+import gradio as gr
 
 class Agent:
     def __init__(self, system_prompt: str = ""):
@@ -120,3 +121,57 @@ class Agent:
                 print(f"Result: {result['result']}")
             except Exception as e:
                 print(f"\nError: {str(e)}")
+
+    def launch_gradio(
+        self,
+        title: str = "AI Agent Interface",
+        description: str = "Interact with the AI agent to process queries and execute functions",
+        input_text_label: str = "Enter your query",
+        output_label: str = "Agent Response"
+    ):
+        """Launch a Gradio interface for the agent"""
+        
+        def process_query_with_gradio(query: str) -> str:
+            try:
+                result = self.process_query(query)
+                response = f"""Function called: {result['function_called']}
+                            Parameters used: {result['parameters_used']}
+                            Reasoning: {result['reasoning']}
+                            Result: {result['result']}"""
+                return response
+            except Exception as e:
+                return f"Error: {str(e)}"
+
+        # Create Gradio interface
+        interface = gr.Interface(
+            fn=process_query_with_gradio,
+            inputs=gr.Textbox(
+                lines=3,
+                placeholder="Enter your query here...",
+                label=input_text_label
+            ),
+            outputs=gr.Textbox(
+                lines=10,
+                label=output_label
+            ),
+            title=title,
+            description=description,
+            examples=[
+                ["What's the weather like in Tokyo?"],
+                ["How far is London from Paris?"],
+                ["Translate 'Hello World' to Spanish"],
+                ["Search for latest news about AI and show 3 results"]
+            ]
+        )
+        
+        # Launch the interface
+        interface.launch()
+
+    def start_gradio(self):
+        """Start the Gradio interface with default settings"""
+        self.launch_gradio(
+            title="AI Agent Interface",
+            description="Interact with the AI agent to process queries and execute functions",
+            input_text_label="Enter your query",
+            output_label="Agent Response"
+        )
