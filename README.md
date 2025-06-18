@@ -187,16 +187,16 @@ newberryai image --gradio
 
 ```sh
 # Add a face to the collection
-newberryai face --image_path "/path/to/your/image.jpg" --add --name "Person Name"
+newberryai face_recognig --image_path "/path/to/your/image.jpg" --add --name "Person Name"
 
 # Recognize a face in an image
-newberryai face --image_path "/path/to/another/image.jpg"
+newberryai face_recognig --image_path "/path/to/another/image.jpg"
 
 # Interactive CLI mode
-newberryai face --interactive
+newberryai face_recognig --interactive
 
 # Launch Gradio web interface
-newberryai face --gradio
+newberryai face_recognig --gradio
 ```
 
 #### Face Detection

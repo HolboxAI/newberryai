@@ -608,7 +608,7 @@ def main():
     image_parser.set_defaults(func=image_generator_command)
 
     # Face Recognition Command
-    face_parser = subparsers.add_parser('face', help='Face recognition using AWS Rekognition')
+    face_parser = subparsers.add_parser('face_recognig', help='Face recognition using AWS Rekognition')
     face_parser.add_argument("--image_path", "-i", type=str, help="Path to the image file")
     face_parser.add_argument("--add", "-a", action="store_true", help="Add face to collection")
     face_parser.add_argument("--name", "-n", type=str, help="Name to associate with the face (required for add)")
