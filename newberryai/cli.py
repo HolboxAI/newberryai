@@ -2,10 +2,12 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
 from newberryai.face_recognigation import FaceRequest
+from newberryai.face_detection import VideoRequest
 import asyncio
 from pathlib import Path
+import json
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -338,6 +340,136 @@ def face_recognition_command(args):
     else:
         print("Check the argument via --help")
 
+def nl2sql_command(args):
+    """Handle the NL2SQL subcommand."""
+    nl2sql = NL2SQL()
+    
+    if args.gradio:
+        print("Launching Gradio interface for NL2SQL")
+        nl2sql.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for NL2SQL")
+        nl2sql.run_cli()
+    elif args.question:
+        # Check if database credentials are provided
+        if not all([args.user, args.password, args.database]):
+            print("Error: Database credentials (--user, --password, --database) are required when using --question")
+            sys.exit(1)
+            
+        try:
+            # Create database config
+            db_config = nl2sql.DatabaseConfig(
+                host=args.host,
+                user=args.user,
+                password=args.password,
+                database=args.database,
+                port=args.port
+            )
+            
+            # Create request
+            request = nl2sql.NL2SQLRequest(
+                question=args.question,
+                db_config=db_config
+            )
+            
+            # Process query
+            response = nl2sql.process_query(request)
+            
+            print("\nResults:")
+            print(f"Generated SQL: {response.generated_sql}")
+            print(f"Data: {json.dumps(response.data, indent=2)}")
+            print(f"Suggested Chart: {response.best_chart}")
+            print(f"Selected Columns: {json.dumps(response.selected_columns, indent=2)}")
+            print(f"Summary: {response.summary}")
+            
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
+def pdf_extraction_command(args):
+    """Handle the PDF extraction subcommand."""
+    extractor = PDFExtractor()
+    
+    if args.gradio:
+        print("Launching Gradio interface for PDF Extraction")
+        extractor.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for PDF Extraction")
+        extractor.run_cli()
+    elif args.file_path:
+        # Validate that the file exists
+        if not os.path.exists(args.file_path):
+            print(f"Error: PDF file not found at path: {args.file_path}")
+            sys.exit(1)
+        
+        print(f"Processing PDF: {args.file_path}")
+        loop = asyncio.get_event_loop()
+        pdf_id = loop.run_until_complete(extractor.process_pdf(args.file_path))
+        
+        if args.question:
+            response = loop.run_until_complete(extractor.ask_question(pdf_id, args.question))
+            print("\nAnswer:")
+            print(response["answer"])
+            print("\nSource Chunks:")
+            for chunk in response["source_chunks"]:
+                print(f"\n---\n{chunk}")
+    else:
+        print("Check the argument via --help")
+
+def face_detection_command(args):
+    """Handle the face detection subcommand."""
+    face_detector = FaceDetection()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Face Detection")
+        face_detector.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Face Detection")
+        face_detector.run_cli()
+    elif args.add_image and args.name:
+        try:
+            # Add face to collection
+            print(f"Adding face to collection: {args.name}")
+            response = face_detector.add_face_to_collection(args.add_image, args.name)
+            
+            print("\nResult:")
+            print(response.message)
+            if response.success:
+                print(f"Face ID: {response.face_id}")
+                    
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    elif args.video_path:
+        try:
+            # Create request with provided parameters
+            request = VideoRequest(
+                video_path=args.video_path,
+                max_frames=args.max_frames
+            )
+            
+            # Process video
+            print("Processing video...")
+            results = face_detector.process_video(request)
+            
+            print("\nDetection Results:")
+            for detection in results:
+                print(f"\nTimestamp: {detection['timestamp']}s")
+                if detection.get('external_image_id'):
+                    print(f"Matched Face: {detection['external_image_id']}")
+                    print(f"Face ID: {detection['face_id']}")
+                    print(f"Confidence: {detection['confidence']:.2f}%")
+                else:
+                    print("No match found in collection")
+                    
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -476,7 +608,7 @@ def main():
     image_parser.set_defaults(func=image_generator_command)
 
     # Face Recognition Command
-    face_parser = subparsers.add_parser('face', help='Face recognition using AWS Rekognition')
+    face_parser = subparsers.add_parser('face_recognig', help='Face recognition using AWS Rekognition')
     face_parser.add_argument("--image_path", "-i", type=str, help="Path to the image file")
     face_parser.add_argument("--add", "-a", action="store_true", help="Add face to collection")
     face_parser.add_argument("--name", "-n", type=str, help="Name to associate with the face (required for add)")
@@ -485,6 +617,42 @@ def main():
     face_parser.add_argument("--interactive", "-int", action="store_true",
                         help="Run in interactive CLI mode")
     face_parser.set_defaults(func=face_recognition_command)
+
+    # NL2SQL Command
+    nl2sql_parser = subparsers.add_parser('nl2sql', help='Convert natural language to SQL queries')
+    nl2sql_parser.add_argument("--question", "-q", type=str, help="Natural language question to convert to SQL")
+    nl2sql_parser.add_argument("--host", type=str, default="localhost", help="Database host")
+    nl2sql_parser.add_argument("--user", type=str, help="Database username")
+    nl2sql_parser.add_argument("--password", type=str, help="Database password")
+    nl2sql_parser.add_argument("--database", type=str, help="Database name")
+    nl2sql_parser.add_argument("--port", type=int, default=3306, help="Database port")
+    nl2sql_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    nl2sql_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    nl2sql_parser.set_defaults(func=nl2sql_command)
+
+    # PDF Extraction Command
+    pdf_extraction_parser = subparsers.add_parser('pdf_extract', help='Extract and query content from PDF documents')
+    pdf_extraction_parser.add_argument("--file_path", "-f", type=str, help="Path to the PDF document to analyze")
+    pdf_extraction_parser.add_argument("--question", "-q", type=str, help="Question to ask about the PDF content")
+    pdf_extraction_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    pdf_extraction_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    pdf_extraction_parser.set_defaults(func=pdf_extraction_command)
+
+    # Face Detection Command
+    face_detect_parser = subparsers.add_parser('face_detect', help='Process videos and detect faces using AWS Rekognition')
+    face_detect_parser.add_argument("--video_path", "-v", type=str, help="Path to the video file")
+    face_detect_parser.add_argument("--max_frames", "-m", type=int, default=20, help="Maximum number of frames to process")
+    face_detect_parser.add_argument("--add_image", "-a", type=str, help="Path to the image to add to collection")
+    face_detect_parser.add_argument("--name", "-n", type=str, help="Name to associate with the image")
+    face_detect_parser.add_argument("--gradio", "-g", action="store_true", 
+                        help="Launch Gradio interface")
+    face_detect_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    face_detect_parser.set_defaults(func=face_detection_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

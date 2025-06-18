@@ -197,14 +197,19 @@ class FaceRecognition:
             except Exception as e:
                 return f"Error: {str(e)}"
 
-        # Create Gradio interface
-        with gr.Blocks(title="Face Recognition System") as interface:
+        # Create Gradio interface with improved UI
+        with gr.Blocks(title="Face Recognition System", css="""
+            .image-preview img {max-width: 400px !important; max-height: 300px !important; border-radius: 10px; box-shadow: 0 2px 8px #0002;}
+            .gradio-container {padding: 24px;}
+            .gr-box {margin-bottom: 16px;}
+            .gr-row {gap: 24px;}
+        """) as interface:
             gr.Markdown("# Face Recognition System")
             
             with gr.Tab("Add Face to Collection"):
                 with gr.Row():
                     with gr.Column():
-                        add_image = gr.Image(label="Upload Face Image")
+                        add_image = gr.Image(label="Upload Face Image", elem_classes=["image-preview"])
                         add_name = gr.Textbox(label="Enter Name")
                         add_button = gr.Button("Add Face")
                         add_output = gr.Textbox(label="Result")
@@ -218,7 +223,7 @@ class FaceRecognition:
             with gr.Tab("Recognize Face"):
                 with gr.Row():
                     with gr.Column():
-                        rec_image = gr.Image(label="Upload Face Image")
+                        rec_image = gr.Image(label="Upload Face Image", elem_classes=["image-preview"])
                         rec_button = gr.Button("Recognize Face")
                         rec_output = gr.Textbox(label="Result")
                 

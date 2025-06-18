@@ -15,9 +15,12 @@ A Python package for AI tools using LLM.
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
+- **PDF Extractor**: Extract and query content from PDF documents using embeddings and semantic search
 - **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
 - **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
 - **Face Recognition**: Add and recognize faces using AWS Rekognition
+- **Face Detection**: Process videos and detect faces using AWS Rekognition
+- **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
 
 ## Installation
 
@@ -46,6 +49,8 @@ Available commands:
 - `video` - Generate videos from text descriptions
 - `image` - Generate images from text descriptions
 - `face` - Add and recognize faces using AWS Rekognition
+- `face_detect` - Process videos and detect faces using AWS Rekognition
+- `nl2sql` - Generate SQL queries from natural language
 
 ### CLI Tool
 
@@ -63,6 +68,15 @@ newberryai healthscribe --file_path conversation.wav \
                        --input_s3_bucket my-input-bucket \
                        --output_s3_bucket my-output-bucket \
                        --s3_key s3-key
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```sh
+# Launch Gradio web interface
+newberryai nl2sql --gradio
+
+# Interactive CLI mode
+newberryai nl2sql --interactive
 ```
 #### Differential Diagnosis Assistant
 
@@ -173,16 +187,106 @@ newberryai image --gradio
 
 ```sh
 # Add a face to the collection
-newberryai face --image_path "/path/to/your/image.jpg" --add --name "Person Name"
+newberryai face_recognig --image_path "/path/to/your/image.jpg" --add --name "Person Name"
 
 # Recognize a face in an image
-newberryai face --image_path "/path/to/another/image.jpg"
+newberryai face_recognig --image_path "/path/to/another/image.jpg"
 
 # Interactive CLI mode
-newberryai face --interactive
+newberryai face_recognig --interactive
 
 # Launch Gradio web interface
-newberryai face --gradio
+newberryai face_recognig --gradio
+```
+
+#### Face Detection
+
+```python
+from newberryai import FaceDetection
+
+# Initialize the Face Detection system
+face_detector = FaceDetection()
+
+# Add a face to the collection
+response = face_detector.add_face_to_collection("/path/to/face.jpg", "Person Name")
+if response.success:
+    print(f"Face added successfully: {response.face_id}")
+
+# Process a video file and detect faces
+results = face_detector.process_video(VideoRequest(
+    video_path="/path/to/your/video.mp4",
+    max_frames=20
+))
+
+# Print detection results
+for detection in results:
+    print(f"Timestamp: {detection['timestamp']}s")
+    if detection.get('external_image_id'):
+        print(f"Matched Face: {detection['external_image_id']}")
+        print(f"Face ID: {detection['face_id']}")
+        print(f"Confidence: {detection['confidence']:.2f}%")
+    else:
+        print("No match found in collection")
+
+# Alternatively, launch interactive CLI
+# face_detector.run_cli()
+
+# Or launch the Gradio web interface
+# face_detector.start_gradio()
+```
+
+#### CLI Usage for Face Detection
+
+```sh
+# Add a face to the collection
+newberryai face_detect --add_image /path/to/face.jpg --name "Person Name"
+
+# Process a video file
+newberryai face_detect --video_path /path/to/your/video.mp4 --max_frames 20
+
+# Interactive CLI mode
+newberryai face_detect --interactive
+
+# Launch Gradio web interface
+newberryai face_detect --gradio
+```
+
+#### PDF Extractor
+
+```python
+from newberryai import PDFExtractor
+
+# Initialize the PDF Extractor
+extractor = PDFExtractor()
+
+# Process a PDF file
+pdf_id = await extractor.process_pdf("/path/to/your/document.pdf")
+
+# Ask questions about the PDF content
+response = await extractor.ask_question(pdf_id, "What are the main points discussed in the document?")
+print(response["answer"])
+print("\nSource Chunks:")
+for chunk in response["source_chunks"]:
+    print(f"\n---\n{chunk}")
+
+# Alternatively, launch interactive CLI
+# extractor.run_cli()
+
+# Or launch the Gradio web interface
+# extractor.start_gradio()
+```
+
+#### CLI Usage for PDF Extractor
+
+```sh
+# Process a PDF and ask a question
+newberryai pdf_extract --file_path /path/to/your/document.pdf --question "What are the main points?"
+
+# Interactive CLI mode
+newberryai pdf_extract --interactive
+
+# Launch Gradio web interface
+newberryai pdf_extract --gradio
 ```
 
 ### Python Module
@@ -239,6 +343,49 @@ else:
     # Print the compliance check result
     print(f"Compliant: {'Yes' if result['compliant'] else 'No'}")
     print(f"Analysis: {result['analysis']}")
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```python
+from newberryai import NL2SQL, DatabaseConfig, NL2SQLRequest
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Initialize the NL2SQL processor
+nl2sql_processor = NL2SQL()
+
+# Example: Connect to database and process a query
+try:
+    db_config = DatabaseConfig(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 3306))
+    )
+    nl2sql_processor.connect_to_database(db_config)
+    
+    request = NL2SQLRequest(
+        question="Show me the total sales by region"
+    )
+    
+    response = nl2sql_processor.process_query(request)
+    
+    print(f"Generated SQL: {response.generated_sql}")
+    print(f"Data: {response.data}")
+    print(f"Suggested Chart: {response.best_chart}")
+    print(f"Summary: {response.summary}")
+
+except Exception as e:
+    print(f"Error: {e}")
+
+# Alternatively, launch interactive CLI
+# nl2sql_processor.run_cli()
+
+# Or launch the Gradio web interface
+# nl2sql_processor.start_gradio()
 ```
 #### Differential Diagnosis Assistant
 
