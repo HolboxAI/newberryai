@@ -8,6 +8,9 @@ from newberryai.face_detection import VideoRequest
 import asyncio
 from pathlib import Path
 import json
+import base64
+from newberryai.virtual_tryon import VirtualTryOn
+from .agent import Agent
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -470,6 +473,70 @@ def face_detection_command(args):
     else:
         print("Check the argument via --help")
 
+def virtual_tryon_command(args):
+    """Handle the virtual try-on subcommand."""
+    try_on = VirtualTryOn()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Virtual Try-On")
+        try_on.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Virtual Try-On")
+        try_on.run_cli()
+    elif args.model_image and args.garment_image:
+        try:
+            # Convert images to base64
+            model_b64 = base64.b64encode(open(args.model_image, "rb").read()).decode()
+            garment_b64 = base64.b64encode(open(args.garment_image, "rb").read()).decode()
+            
+            # Create request
+            request = try_on.TryOnRequest(
+                model_image=model_b64,
+                garment_image=garment_b64,
+                category=args.category
+            )
+            
+            # Process request
+            print("Processing virtual try-on...")
+            loop = asyncio.get_event_loop()
+            response = loop.run_until_complete(try_on.process(request))
+            
+            # Wait for completion
+            while True:
+                status = loop.run_until_complete(try_on.get_status(response.job_id))
+                if status.status in ["completed", "failed"]:
+                    break
+                asyncio.sleep(3)
+            
+            if status.status == "completed" and status.output:
+                print("\nVirtual try-on completed successfully!")
+                print("\nGenerated images:")
+                for url in status.output:
+                    print(url)
+            else:
+                print("\nVirtual try-on failed!")
+                
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Check the argument via --help")
+
+def agent_command(args):
+    """Handle agent-related commands"""
+    agent = Agent()
+    
+    if args.interactive:
+        print("Starting interactive session for Agent")
+        agent.run_cli()
+    elif args.query:
+        print(f"Query: {args.query}\n")
+        response = agent.process_query(args.query)
+        print("Response:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -653,6 +720,24 @@ def main():
     face_detect_parser.add_argument("--interactive", "-i", action="store_true",
                         help="Run in interactive CLI mode")
     face_detect_parser.set_defaults(func=face_detection_command)
+
+    # Virtual Try-On Command
+    tryon_parser = subparsers.add_parser('tryon', help='Generate virtual try-on images')
+    tryon_parser.add_argument("--model_image", "-m", type=str, help="Path to model image")
+    tryon_parser.add_argument("--garment_image", "-g", type=str, help="Path to garment image")
+    tryon_parser.add_argument("--category", "-c", default="tops",
+                          choices=["tops", "bottoms", "dresses", "outerwear"],
+                          help="Category of the garment")
+    tryon_parser.add_argument("--gradio", "-G", action="store_true", 
+                        help="Launch Gradio interface")
+    tryon_parser.add_argument("--interactive", "-i", action="store_true",
+                        help="Run in interactive CLI mode")
+    tryon_parser.set_defaults(func=virtual_tryon_command)
+
+    # Add agent subparser
+    agent_parser = subparsers.add_parser('agent', help='Run the agent')
+    agent_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive mode')
+    agent_parser.add_argument('--query', '-q', type=str, help='Process a single query')
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

@@ -21,6 +21,7 @@ A Python package for AI tools using LLM.
 - **Face Recognition**: Add and recognize faces using AWS Rekognition
 - **Face Detection**: Process videos and detect faces using AWS Rekognition
 - **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
+- **Virtual Try-On**: Generate virtual try-on images using AI
 
 ## Installation
 
@@ -51,6 +52,7 @@ Available commands:
 - `face` - Add and recognize faces using AWS Rekognition
 - `face_detect` - Process videos and detect faces using AWS Rekognition
 - `nl2sql` - Generate SQL queries from natural language
+- `tryon` - Generate virtual try-on images
 
 ### CLI Tool
 
@@ -287,6 +289,19 @@ newberryai pdf_extract --interactive
 
 # Launch Gradio web interface
 newberryai pdf_extract --gradio
+```
+
+#### Virtual Try-On
+
+```sh
+# Generate virtual try-on with specific images
+newberryai tryon --model_image /path/to/model.jpg --garment_image /path/to/garment.jpg --category tops
+
+# Interactive CLI mode
+newberryai tryon --interactive
+
+# Launch Gradio web interface
+newberryai tryon --gradio
 ```
 
 ### Python Module
@@ -621,40 +636,54 @@ if recognize_response.success:
 # face_recognition.start_gradio()
 ```
 
+#### Python Module Usage for Virtual Try-On
 
----
-###  Setting Up OpenAI API Key for Speech-to-Speech
+```python
+from newberryai import VirtualTryOn
 
-To use OpenAI's Speech-to-Speech features, you need to set your API key as an environment variable.
+# Initialize the Virtual Try-On
+try_on = VirtualTryOn()
 
-#### Step-by-Step:
+# Generate virtual try-on with specific images
+with open("model.jpg", "rb") as f:
+    model_b64 = base64.b64encode(f.read()).decode()
+with open("garment.jpg", "rb") as f:
+    garment_b64 = base64.b64encode(f.read()).decode()
 
-1. **Get your API key** from [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)
+request = try_on.TryOnRequest(
+    model_image=model_b64,
+    garment_image=garment_b64,
+    category="tops"
+)
 
-2. **Set the environment variable** in your terminal or shell configuration file.
+# Process the request
+response = await try_on.process(request)
 
-##### For **bash** or **zsh** (macOS/Linux):
-```bash
-export OPENAI_API_KEY="your-api-key-here"
+# Wait for completion
+while True:
+    status = await try_on.get_status(response.job_id)
+    if status.status in ["completed", "failed"]:
+        break
+    await asyncio.sleep(3)
+
+if status.status == "completed" and status.output:
+    print("Generated images:")
+    for url in status.output:
+        print(url)
+
+# Alternatively, launch interactive CLI
+# try_on.run_cli()
+
+# Or launch the Gradio web interface
+# try_on.start_gradio()
 ```
 
-You can add this line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc` file to make it permanent.
+The Virtual Try-On supports the following parameters:
+- `model_image`: Path to the model's image (required)
+- `garment_image`: Path to the garment's image (required)
+- `category`: Category of the garment (choices: "tops", "bottoms", "dresses", "outerwear", default: "tops")
 
-##### For **Windows (Command Prompt)**:
-```cmd
-set OPENAI_API_KEY=your-api-key-here
-```
-
-##### For **Windows (PowerShell)**:
-```powershell
-$env:OPENAI_API_KEY="your-api-key-here"
-```
-
-3. **Verify** it's set by running:
-```bash
-echo $OPENAI_API_KEY
-```
-
+Note: This feature requires Fashn API credentials. Make sure to set up your FASHN_API_URL and FASHN_AUTH_KEY in your environment variables.
 
 ## Requirements
 
