@@ -1,9 +1,7 @@
 import boto3
 import json
-import logging
 import os
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import asyncio
 from datetime import datetime
@@ -15,13 +13,6 @@ from pathlib import Path
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
 class VideoGenerator:
     """
     A class for generating videos from text using Amazon Bedrock's Nova model.
@@ -32,27 +23,11 @@ class VideoGenerator:
         """Initialize the VideoGenerator with AWS clients and configuration."""
         self.bedrock_runtime = boto3.client('bedrock-runtime')
         self.s3_client = boto3.client('s3')
-        self.bucket_name = os.getenv('S3_BUCKET_NAME')
+        self.bucket_name = "bedrock-video-generation-us-east-1-7a0z2a"
         self.model_id = "amazon.nova-reel-v1:1"
         
         if not self.bucket_name:
             raise ValueError("S3_BUCKET_NAME environment variable is not set")
-
-    class VideoRequest(BaseModel):
-        """Pydantic model for video generation request parameters."""
-        text: str = Field(..., min_length=1, max_length=512, description="Text prompt for video generation")
-        seed: Optional[int] = Field(default=42, ge=0, le=2147483646, description="Seed for video generation")
-        duration_seconds: Optional[int] = Field(default=6, ge=1, le=30, description="Duration of the video in seconds")
-        fps: Optional[int] = Field(default=24, ge=1, le=60, description="Frames per second")
-        dimension: Optional[str] = Field(default="1280x720", description="Video dimensions (width x height)")
-
-    class VideoResponse(BaseModel):
-        """Pydantic model for video generation response."""
-        job_id: str
-        status: str
-        message: str
-        video_url: Optional[str] = None
-        created_at: datetime = Field(default_factory=datetime.now)
 
     async def check_status(self, invocation_arn: str) -> Dict[str, Any]:
         """
@@ -71,66 +46,53 @@ class VideoGenerator:
             response = self.bedrock_runtime.get_async_invoke(
                 invocationArn=invocation_arn
             )
+            print(response)
             return response
         except Exception as e:
-            logger.error(f"Error checking video generation status: {str(e)}")
             raise Exception("Failed to check video generation status")
 
-    async def generate(self, request: VideoRequest) -> VideoResponse:
+    async def generate(self, text, seed=42, duration_seconds=6, fps=24, dimension="1280x720"):
         """
         Generate a video using Amazon Nova based on the provided text prompt.
-        
         Args:
-            request (VideoRequest): The video generation request parameters
-            
+            text (str): Text prompt for video generation
+            seed (int): Seed for video generation
+            duration_seconds (int): Duration of the video in seconds
+            fps (int): Frames per second
+            dimension (str): Video dimensions (width x height)
         Returns:
-            VideoResponse: Information about the generated video
-            
-        Raises:
-            Exception: If there's an error generating the video
+            dict: Information about the generated video
         """
         try:
-            # Prepare the request payload
             model_input = {
                 "taskType": "TEXT_VIDEO",
                 "textToVideoParams": {
-                    "text": request.text
+                    "text": text
                 },
                 "videoGenerationConfig": {
-                    "durationSeconds": request.duration_seconds,
-                    "fps": request.fps,
-                    "dimension": request.dimension,
-                    "seed": request.seed
+                    "durationSeconds": duration_seconds,
+                    "fps": fps,
+                    "dimension": dimension,
+                    "seed": seed
                 }
             }
-
-            # Configure output location
             output_config = {
                 "s3OutputDataConfig": {
                     "s3Uri": f"s3://{self.bucket_name}"
                 }
             }
-
-            logger.info(f"Model input: {json.dumps(model_input, indent=2)}")
-            logger.info(f"Output config: {json.dumps(output_config, indent=2)}")
-
-            # Start the video generation job
             response = self.bedrock_runtime.start_async_invoke(
                 modelId=self.model_id,
                 modelInput=model_input,
                 outputDataConfig=output_config
             )
-
-            return self.VideoResponse(
-                job_id=response["invocationArn"].split("/")[-1],
-                status="STARTED",
-                message="Video generation job started successfully",
-                video_url=None
-            )
-
+            return {
+                "job_id": response["invocationArn"],
+                "status": "STARTED",
+                "message": "Video generation job started successfully",
+                "video_url": None
+            }
         except Exception as e:
-            logger.error(f"Error in video generation: {str(e)}")
-            logger.error(f"Full error details: {str(e.__dict__)}")
             raise Exception("Failed to generate video")
 
     def get_video_url(self, job_id: str) -> str:
@@ -156,69 +118,42 @@ class VideoGenerator:
                 ExpiresIn=3600  # URL expires in 1 hour
             )
         except Exception as e:
-            logger.error(f"Error generating video URL: {str(e)}")
             raise Exception("Failed to generate video URL")
 
-    async def wait_for_completion(self, job_id: str, timeout: int = 300) -> VideoResponse:
-        """
-        Wait for the video generation job to complete.
-        
-        Args:
-            job_id (str): The ID of the video generation job
-            timeout (int): Maximum time to wait in seconds
-            
-        Returns:
-            VideoResponse: The final status of the video generation
-            
-        Raises:
-            TimeoutError: If the job doesn't complete within the timeout period
-        """
+    async def wait_for_completion(self, job_id, timeout=300):
         start_time = datetime.now()
         while True:
             if (datetime.now() - start_time).total_seconds() > timeout:
                 raise TimeoutError("Video generation timed out")
-
             status = await self.check_status(job_id)
-            if status["status"] == "COMPLETED":
+            if status["status"].lower() == "completed":
                 video_url = self.get_video_url(job_id)
-                return self.VideoResponse(
-                    job_id=job_id,
-                    status="COMPLETED",
-                    message="Video generation completed successfully",
-                    video_url=video_url
-                )
-            elif status["status"] == "FAILED":
-                return self.VideoResponse(
-                    job_id=job_id,
-                    status="FAILED",
-                    message=f"Video generation failed: {status.get('error', 'Unknown error')}",
-                    video_url=None
-                )
-
-            await asyncio.sleep(50)  # Wait 50 seconds before checking again
+                return {
+                    "job_id": job_id,
+                    "status": "COMPLETED",
+                    "message": "Video generation completed successfully",
+                    "video_url": video_url
+                }
+            elif status["status"].lower() == "failed":
+                return {
+                    "job_id": job_id,
+                    "status": "FAILED",
+                    "message": f"Video generation failed: {status.get('error', 'Unknown error')}",
+                    "video_url": None
+                }
+            await asyncio.sleep(50)
 
     def start_gradio(self):
-        """
-        Start a Gradio interface for the video generator.
-        This provides a web-based UI for generating videos.
-        """
-        def generate_video_interface(text: str, duration: int, fps: int, dimension: str, seed: int) -> str:
-            """Gradio interface function for video generation"""
+        def generate_video_interface(text, duration, fps, dimension, seed):
             try:
-                request = self.VideoRequest(
-                    text=text,
-                    duration_seconds=duration,
-                    fps=fps,
-                    dimension=dimension,
-                    seed=seed
-                )
-                
-                # Run the async function in the event loop
                 loop = asyncio.get_event_loop()
-                response = loop.run_until_complete(self.generate(request))
-                final_response = loop.run_until_complete(self.wait_for_completion(response.job_id))
-                
-                return final_response.video_url
+                response = loop.run_until_complete(
+                    self.generate(text, seed, duration, fps, dimension)
+                )
+                final_response = loop.run_until_complete(
+                    self.wait_for_completion(response["job_id"])
+                )
+                return final_response["video_url"]
             except Exception as e:
                 return f"Error: {str(e)}"
 
@@ -248,38 +183,26 @@ class VideoGenerator:
         return interface.launch(share=True)
 
     def run_cli(self):
-        """
-        Run an interactive command-line interface for video generation.
-        """
         print("Video Generator AI Assistant initialized")
         print("Type 'exit' or 'quit' to end the conversation.")
-        
         while True:
             text = input("\nEnter your video description: ")
             if text.lower() in ["exit", "quit"]:
                 print("Goodbye!")
                 break
-            
             try:
-                # Create request with default parameters
-                request = self.VideoRequest(text=text)
-                
-                # Generate video
                 print("Starting video generation...")
                 loop = asyncio.get_event_loop()
-                response = loop.run_until_complete(self.generate(request))
-                
+                response = loop.run_until_complete(self.generate(text))
                 print("Waiting for video generation to complete...")
-                final_response = loop.run_until_complete(self.wait_for_completion(response.job_id))
-                
-                if final_response.status == "COMPLETED":
+                final_response = loop.run_until_complete(self.wait_for_completion(response["job_id"]))
+                if final_response["status"] == "COMPLETED":
                     print(f"Video generated successfully!")
-                    print(f"Video URL: {final_response.video_url}")
+                    print(f"Video URL: {final_response['video_url']}")
                 else:
-                    print(f"Video generation failed: {final_response.message}")
-                    
+                    print(f"Video generation failed: {final_response['message']}")
             except Exception as e:
                 print(f"Error: {str(e)}")
 
 if __name__ == "__main__":
-    VideoGenerator.run_cli()
+    VideoGenerator().run_cli()

@@ -1,12 +1,10 @@
 import boto3
 import json
-import logging
 import os
 import base64
 import uuid
 from pathlib import Path
 from typing import Optional, Dict, List
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import gradio as gr
 import asyncio
@@ -14,13 +12,6 @@ from datetime import datetime
 
 # Load environment variables
 load_dotenv()
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # Create images directory if it doesn't exist
 IMAGES_DIR = Path("generated_images")
@@ -36,105 +27,65 @@ class ImageGenerator:
         """Initialize the ImageGenerator with AWS client and configuration."""
         self.bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-east-1')
         self.model_id = "amazon.titan-image-generator-v2:0"
-        self.backend_url = os.getenv("BACKEND_URL", "https://demo.holbox.ai/api/demo_backend_v2")
 
-    class ImageRequest(BaseModel):
-        """Pydantic model for image generation request parameters."""
-        text: str = Field(..., min_length=1, max_length=512, description="Text prompt for image generation")
-        width: int = Field(default=1024, ge=512, le=1024, description="Width of the generated image")
-        height: int = Field(default=1024, ge=512, le=1024, description="Height of the generated image")
-        number_of_images: int = Field(default=1, ge=1, le=4, description="Number of images to generate")
-        cfg_scale: int = Field(default=8, ge=1, le=20, description="CFG scale for image generation")
-        seed: Optional[int] = Field(default=42, ge=0, le=2147483646, description="Seed for image generation")
-        quality: str = Field(default="standard", description="Quality of the generated image")
-
-    class ImageResponse(BaseModel):
-        """Pydantic model for image generation response."""
-        message: str
-        images: List[str]
-        local_path: str
-        created_at: datetime = Field(default_factory=datetime.now)
-
-    async def generate(self, request: ImageRequest) -> ImageResponse:
+    async def generate(self, text, width=1024, height=1024, number_of_images=1, cfg_scale=8, seed=42, quality="standard"):
         """
         Generate images using Amazon Titan Image Generator.
-        
         Args:
-            request (ImageRequest): The image generation request parameters
-            
+            text (str): Text prompt for image generation
+            width (int): Width of the generated image
+            height (int): Height of the generated image
+            number_of_images (int): Number of images to generate
+            cfg_scale (int): CFG scale for image generation
+            seed (int): Seed for image generation
+            quality (str): Quality of the generated image
         Returns:
-            ImageResponse: Information about the generated images
-            
-        Raises:
-            Exception: If there's an error generating the images
+            dict: Information about the generated images
         """
         try:
-            # Prepare the request payload
             model_input = {
                 "textToImageParams": {
-                    "text": request.text
+                    "text": text
                 },
                 "taskType": "TEXT_IMAGE",
                 "imageGenerationConfig": {
-                    "cfgScale": request.cfg_scale,
-                    "seed": request.seed,
-                    "quality": request.quality,
-                    "width": request.width,
-                    "height": request.height,
-                    "numberOfImages": request.number_of_images,
+                    "cfgScale": cfg_scale,
+                    "seed": seed,
+                    "quality": quality,
+                    "width": width,
+                    "height": height,
+                    "numberOfImages": number_of_images,
                 }
             }
-
-            logger.info(f"Model input: {json.dumps(model_input, indent=2)}")
-
-            # Generate the image
             response = self.bedrock_runtime.invoke_model(
                 modelId=self.model_id,
                 contentType="application/json",
                 accept="application/json",
                 body=json.dumps(model_input)
             )
-
-            # Parse the response
             response_body = json.loads(response.get('body').read())
-            logger.info(f"Model response: {json.dumps(response_body, indent=2)}")
-
             if 'images' not in response_body:
                 raise Exception("No images in response")
-
-            # Process and save images
-            image_urls = []
+            image_paths = []
             for image_data in response_body['images']:
                 try:
-                    # Decode and save the image
                     if isinstance(image_data, str):
                         image_bytes = base64.b64decode(image_data)
                     else:
                         image_bytes = base64.b64decode(image_data.get('data', ''))
-
-                    # Generate unique filename and save
                     filename = f"{uuid.uuid4()}.png"
                     filepath = IMAGES_DIR / filename
-                    
                     with open(filepath, "wb") as f:
                         f.write(image_bytes)
-                    
-                    image_urls.append(f"{self.backend_url}/images/{filename}")
-                    logger.info(f"Image saved successfully: {filename}")
-
+                    image_paths.append(str(filepath))
                 except Exception as e:
-                    logger.error(f"Error processing image: {str(e)}")
                     raise Exception("Failed to process generated image")
-
-            return self.ImageResponse(
-                message="Images generated successfully",
-                images=image_urls,
-                local_path=str(IMAGES_DIR)
-            )
-
+            return {
+                "message": "Images generated successfully",
+                "images": image_paths,
+                "local_path": str(IMAGES_DIR)
+            }
         except Exception as e:
-            logger.error(f"Error in image generation: {str(e)}")
-            logger.error(f"Full error details: {str(e.__dict__)}")
             raise Exception("Failed to generate images")
 
     def start_gradio(self):
@@ -142,26 +93,14 @@ class ImageGenerator:
         Start a Gradio interface for the image generator.
         This provides a web-based UI for generating images.
         """
-        def generate_image_interface(text: str, width: int, height: int, 
-                                  number_of_images: int, cfg_scale: int, 
-                                  seed: int, quality: str) -> List[str]:
-            """Gradio interface function for image generation"""
+        def generate_image_interface(text, width, height, number_of_images, cfg_scale, seed, quality):
             try:
-                request = self.ImageRequest(
-                    text=text,
-                    width=width,
-                    height=height,
-                    number_of_images=number_of_images,
-                    cfg_scale=cfg_scale,
-                    seed=seed,
-                    quality=quality
-                )
-                
-                # Run the async function in the event loop
+                # Call the new generate method with simple arguments
                 loop = asyncio.get_event_loop()
-                response = loop.run_until_complete(self.generate(request))
-                
-                return response.images
+                response = loop.run_until_complete(
+                    self.generate(text, width, height, number_of_images, cfg_scale, seed, quality)
+                )
+                return response["images"]
             except Exception as e:
                 return [f"Error: {str(e)}"]
 
@@ -206,22 +145,17 @@ class ImageGenerator:
                 break
             
             try:
-                # Create request with default parameters
-                request = self.ImageRequest(text=text)
-                
-                # Generate images
                 print("Generating images...")
                 loop = asyncio.get_event_loop()
-                response = loop.run_until_complete(self.generate(request))
-                
+                response = loop.run_until_complete(self.generate(text))
                 print(f"\nImages generated successfully!")
-                print(f"Images saved in: {response.local_path}")
-                print("\nImage URLs:")
-                for url in response.images:
-                    print(url)
+                print(f"Images saved in: {response['local_path']}")
+                print("\nImage Paths:")
+                for path in response["images"]:
+                    print(path)
                     
             except Exception as e:
                 print(f"Error: {str(e)}")
 
 if __name__ == "__main__":
-    ImageGenerator.run_cli()
+    ImageGenerator().run_cli()
