@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# This section configures setuptools_scm
+
+# Specify the version scheme
+# "no-guess-dev" for PyPI compliance - won't add local version components
+version_scheme = "no-guess-dev"
+
+# Use "no-local-version" to remove the local part (after +) which PyPI rejects
+local_scheme = "no-local-version"
+
+# You can set a fallback version if git data is not available
+fallback_version = "0.0.0"
+
+# You can specify a custom tag regex if needed
+# tag_regex = "^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
+
+# Write the version to a Python file for runtime access
+write_to = "newberryai/_version.py"

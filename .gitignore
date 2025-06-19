@@ -1,0 +1,16 @@
+test.py
+test.ipynb
+.gradio/
+newberryai.egg-info/
+newberryai/__pycache__/
+package_test/
+__pycache__/
+.DS_Store
+version.txt
+dataset.csv
+test.sh
+.env
+CAR0001.mp3
+image.png
+vishnu.jpg
+vishnu2.jpg
