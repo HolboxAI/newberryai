@@ -9,3 +9,8 @@ __pycache__/
 version.txt
 dataset.csv
 test.sh
+.env
+CAR0001.mp3
+image.png
+vishnu.jpg
+vishnu2.jpg

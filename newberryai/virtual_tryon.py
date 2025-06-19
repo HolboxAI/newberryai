@@ -8,6 +8,7 @@ from typing import Optional, Dict, List
 from dotenv import load_dotenv
 import gradio as gr
 from datetime import datetime
+import mimetypes
 
 # Load environment variables
 load_dotenv()
@@ -33,12 +34,21 @@ class VirtualTryOn:
         # Global storage for processing jobs
         self.processing_jobs = {}
 
+    def encode_image_with_prefix(self, path):
+        with open(path, "rb") as image_file:
+            img_data = image_file.read()
+            img_ext = path.split('.')[-1].lower()
+            # Adding the necessary prefix for base64 encoded images
+            return f"data:image/{img_ext};base64," + base64.b64encode(img_data).decode('utf-8')
+    
     async def process(self, model_image, garment_image, category="tops"):
         job_id = str(uuid.uuid4())
         self.processing_jobs[job_id] = {"status": "processing", "output": None}
+        model_b64 = self.encode_image_with_prefix(model_image)
+        garment_b64 = self.encode_image_with_prefix(garment_image)
         payload = {
-            "model_image": model_image,
-            "garment_image": garment_image,
+            "model_image": model_b64,
+            "garment_image": garment_b64,
             "category": category,
         }
         try:

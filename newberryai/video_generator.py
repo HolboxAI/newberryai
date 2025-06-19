@@ -9,6 +9,7 @@ import gradio as gr
 import argparse
 import sys
 from pathlib import Path
+import re
 
 # Load environment variables
 load_dotenv()
@@ -128,6 +129,7 @@ class VideoGenerator:
             status = await self.check_status(job_id)
             if status["status"].lower() == "completed":
                 video_url = self.get_video_url(job_id)
+                video_url = re.sub(r'/arn%3Aaws%3Abedrock%3Aus-east-1%3A992382417943%3Aasync-invoke([^?]*)(\?.*)?', r'\1', video_url)
                 return {
                     "job_id": job_id,
                     "status": "COMPLETED",
