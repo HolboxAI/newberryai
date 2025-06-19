@@ -247,8 +247,11 @@ class EDA:
         Returns:
             str: The assistant's response
         """
-        # Validate input
-        if not isinstance(file_path, str):
-            return "Error: Please provide a valid document path."
-        
-        return self.assistant.ask(file_path=file_path, **kwargs)
+        file_path = kwargs.get('file_path', None)
+        if self.current_data is None:
+            return "No data loaded. Please load a CSV file first."
+        # If file_path was provided, use it; otherwise, pass only the question
+        if file_path is not None:
+            return self.assistant.ask(question=question, file_path=file_path)
+        else:
+            return self.assistant.ask(question=question)
