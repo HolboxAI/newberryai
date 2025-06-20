@@ -15,6 +15,13 @@ A Python package for AI tools using LLM.
 - **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
 - **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
 - **PDF Summarizer**: Extract and summarize content from PDF documents
+- **PDF Extractor**: Extract and query content from PDF documents using embeddings and semantic search
+- **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
+- **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
+- **Face Recognition**: Add and recognize faces using AWS Rekognition
+- **Face Detection**: Process videos and detect faces using AWS Rekognition
+- **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
+- **Virtual Try-On**: Generate virtual try-on images using AI
 
 ## Installation
 
@@ -40,6 +47,12 @@ Available commands:
 - `speech_to_speech` - Launch the real-time Speech-to-Speech assistant.
 - `PII_Red` - Analyze text and remove PII from the text using AI.
 - `PII_extract` - Analyze text and extract PII from the text using AI.
+- `video` - Generate videos from text descriptions
+- `image` - Generate images from text descriptions
+- `face` - Add and recognize faces using AWS Rekognition
+- `face_detect` - Process videos and detect faces using AWS Rekognition
+- `nl2sql` - Generate SQL queries from natural language
+- `tryon` - Generate virtual try-on images
 
 ### CLI Tool
 
@@ -57,6 +70,15 @@ newberryai healthscribe --file_path conversation.wav \
                        --input_s3_bucket my-input-bucket \
                        --output_s3_bucket my-output-bucket \
                        --s3_key s3-key
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```sh
+# Launch Gradio web interface
+newberryai nl2sql --gradio
+
+# Interactive CLI mode
+newberryai nl2sql --interactive
 ```
 #### Differential Diagnosis Assistant
 
@@ -137,6 +159,151 @@ newberryai PII_extract --gradio
 newberryai speech_to_speech
 ```
 
+#### Video Generator
+
+```sh
+# Generate a video with specific parameters
+newberryai video --text "A beautiful sunset over the ocean" --duration 10 --fps 30 --dimension 1920x1080 --output video.mp4
+
+# Interactive CLI mode
+newberryai video --interactive
+
+# Launch Gradio web interface
+newberryai video --gradio
+```
+
+#### Image Generator
+
+```sh
+# Generate images with specific parameters
+newberryai image --text "A beautiful sunset over the ocean" --width 1024 --height 1024 --number_of_images 1 --quality premium
+
+# Interactive CLI mode
+newberryai image --interactive
+
+# Launch Gradio web interface
+newberryai image --gradio
+```
+
+#### Face Recognition
+
+```sh
+# Add a face to the collection
+newberryai face_recognig --image_path "/path/to/your/image.jpg" --add --name "Person Name"
+
+# Recognize a face in an image
+newberryai face_recognig --image_path "/path/to/another/image.jpg"
+
+# Interactive CLI mode
+newberryai face_recognig --interactive
+
+# Launch Gradio web interface
+newberryai face_recognig --gradio
+```
+
+#### Face Detection
+
+```python
+from newberryai import FaceDetection
+
+# Initialize the Face Detection system
+face_detector = FaceDetection()
+
+# Add a face to the collection
+response = face_detector.add_face_to_collection("/path/to/face.jpg", "Person Name")
+if response.success:
+    print(f"Face added successfully: {response.face_id}")
+
+# Process a video file and detect faces
+results = face_detector.process_video(VideoRequest(
+    video_path="/path/to/your/video.mp4",
+    max_frames=20
+))
+
+# Print detection results
+for detection in results:
+    print(f"Timestamp: {detection['timestamp']}s")
+    if detection.get('external_image_id'):
+        print(f"Matched Face: {detection['external_image_id']}")
+        print(f"Face ID: {detection['face_id']}")
+        print(f"Confidence: {detection['confidence']:.2f}%")
+    else:
+        print("No match found in collection")
+
+# Alternatively, launch interactive CLI
+# face_detector.run_cli()
+
+# Or launch the Gradio web interface
+# face_detector.start_gradio()
+```
+
+#### CLI Usage for Face Detection
+
+```sh
+# Add a face to the collection
+newberryai face_detect --add_image /path/to/face.jpg --name "Person Name"
+
+# Process a video file
+newberryai face_detect --video_path /path/to/your/video.mp4 --max_frames 20
+
+# Interactive CLI mode
+newberryai face_detect --interactive
+
+# Launch Gradio web interface
+newberryai face_detect --gradio
+```
+
+#### PDF Extractor
+
+```python
+from newberryai import PDFExtractor
+
+# Initialize the PDF Extractor
+extractor = PDFExtractor()
+
+# Process a PDF file
+pdf_id = await extractor.process_pdf("/path/to/your/document.pdf")
+
+# Ask questions about the PDF content
+response = await extractor.ask_question(pdf_id, "What are the main points discussed in the document?")
+print(response["answer"])
+print("\nSource Chunks:")
+for chunk in response["source_chunks"]:
+    print(f"\n---\n{chunk}")
+
+# Alternatively, launch interactive CLI
+# extractor.run_cli()
+
+# Or launch the Gradio web interface
+# extractor.start_gradio()
+```
+
+#### CLI Usage for PDF Extractor
+
+```sh
+# Process a PDF and ask a question
+newberryai pdf_extract --file_path /path/to/your/document.pdf --question "What are the main points?"
+
+# Interactive CLI mode
+newberryai pdf_extract --interactive
+
+# Launch Gradio web interface
+newberryai pdf_extract --gradio
+```
+
+#### Virtual Try-On
+
+```sh
+# Generate virtual try-on with specific images
+newberryai tryon --model_image /path/to/model.jpg --garment_image /path/to/garment.jpg --category tops
+
+# Interactive CLI mode
+newberryai tryon --interactive
+
+# Launch Gradio web interface
+newberryai tryon --gradio
+```
+
 ### Python Module
 
 You can also use NewberryAI as a Python module in your applications.
@@ -191,6 +358,49 @@ else:
     # Print the compliance check result
     print(f"Compliant: {'Yes' if result['compliant'] else 'No'}")
     print(f"Analysis: {result['analysis']}")
+```
+#### Natural Language to SQL (NL2SQL) Assistant
+
+```python
+from newberryai import NL2SQL, DatabaseConfig, NL2SQLRequest
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Initialize the NL2SQL processor
+nl2sql_processor = NL2SQL()
+
+# Example: Connect to database and process a query
+try:
+    db_config = DatabaseConfig(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 3306))
+    )
+    nl2sql_processor.connect_to_database(db_config)
+    
+    request = NL2SQLRequest(
+        question="Show me the total sales by region"
+    )
+    
+    response = nl2sql_processor.process_query(request)
+    
+    print(f"Generated SQL: {response.generated_sql}")
+    print(f"Data: {response.data}")
+    print(f"Suggested Chart: {response.best_chart}")
+    print(f"Summary: {response.summary}")
+
+except Exception as e:
+    print(f"Error: {e}")
+
+# Alternatively, launch interactive CLI
+# nl2sql_processor.run_cli()
+
+# Or launch the Gradio web interface
+# nl2sql_processor.start_gradio()
 ```
 #### Differential Diagnosis Assistant
 
@@ -265,7 +475,7 @@ return average
 
 numbers = [10, 20, 30, 40, 50]
 result = calculate_average(numbers)
-print(“The average is:”, results)""")
+print("The average is:", results)""")
 print(response)
 
 # Alternatively, launch interactive CLI
@@ -394,41 +604,86 @@ export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
 ```
 This ensures that your system is using the latest SSL certificates.
 
+#### Face Recognition
 
+```python
+from newberryai import FaceRecognition
 
----
-###  Setting Up OpenAI API Key for Speech-to-Speech
+# Initialize the Face Recognition system
+face_recognition = FaceRecognition()
 
-To use OpenAI's Speech-to-Speech features, you need to set your API key as an environment variable.
+# Example: Add a face to the collection
+add_response = face_recognition.add_to_collect(
+    image_path="/path/to/your/image.jpg",
+    name="Person Name"
+)
+print(add_response.message)
+if add_response.success:
+    print(f"Face ID: {add_response.face_id}")
 
-#### Step-by-Step:
+# Example: Recognize a face in an image
+recognize_response = face_recognition.recognize_image(
+    image_path="/path/to/another/image.jpg"
+)
+print(recognize_response.message)
+if recognize_response.success:
+    print(f"Recognized: {recognize_response.name} (Confidence: {recognize_response.confidence:.2f}%)")
 
-1. **Get your API key** from [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)
+# Alternatively, launch interactive CLI
+# face_recognition.run_cli()
 
-2. **Set the environment variable** in your terminal or shell configuration file.
-
-##### For **bash** or **zsh** (macOS/Linux):
-```bash
-export OPENAI_API_KEY="your-api-key-here"
+# Or launch the Gradio web interface
+# face_recognition.start_gradio()
 ```
 
-You can add this line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc` file to make it permanent.
+#### Python Module Usage for Virtual Try-On
 
-##### For **Windows (Command Prompt)**:
-```cmd
-set OPENAI_API_KEY=your-api-key-here
+```python
+from newberryai import VirtualTryOn
+
+# Initialize the Virtual Try-On
+try_on = VirtualTryOn()
+
+# Generate virtual try-on with specific images
+with open("model.jpg", "rb") as f:
+    model_b64 = base64.b64encode(f.read()).decode()
+with open("garment.jpg", "rb") as f:
+    garment_b64 = base64.b64encode(f.read()).decode()
+
+request = try_on.TryOnRequest(
+    model_image=model_b64,
+    garment_image=garment_b64,
+    category="tops"
+)
+
+# Process the request
+response = await try_on.process(request)
+
+# Wait for completion
+while True:
+    status = await try_on.get_status(response.job_id)
+    if status.status in ["completed", "failed"]:
+        break
+    await asyncio.sleep(3)
+
+if status.status == "completed" and status.output:
+    print("Generated images:")
+    for url in status.output:
+        print(url)
+
+# Alternatively, launch interactive CLI
+# try_on.run_cli()
+
+# Or launch the Gradio web interface
+# try_on.start_gradio()
 ```
 
-##### For **Windows (PowerShell)**:
-```powershell
-$env:OPENAI_API_KEY="your-api-key-here"
-```
+The Virtual Try-On supports the following parameters:
+- `model_image`: Path to the model's image (required)
+- `garment_image`: Path to the garment's image (required)
+- `category`: Category of the garment (choices: "tops", "bottoms", "dresses", "outerwear", default: "tops")
 
-3. **Verify** it's set by running:
-```bash
-echo $OPENAI_API_KEY
-```
-
+Note: This feature requires Fashn API credentials. Make sure to set up your FASHN_API_URL and FASHN_AUTH_KEY in your environment variables.
 
 ## Requirements
 
@@ -439,6 +694,7 @@ echo $OPENAI_API_KEY
   - Amazon S3
   - AWS HealthScribe
   - AWS IAM
+  - AWS Rekognition
 
 ## AWS Configuration
 
@@ -448,6 +704,9 @@ To use the AWS-powered features, you need to set up the following:
 2. AWS IAM role with access to required services
 3. S3 buckets for input and output data
 4. AWS credentials configured in your environment
+5. Amazon Bedrock access for video generation
+6. S3 bucket for video storage
+7. AWS Rekognition collection for face recognition
 
 ## License
 

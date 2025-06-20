@@ -198,10 +198,8 @@ class HealthScribe:
             summary_uri = medical_scribe_output['ClinicalDocumentUri']
             transcription_summary = self.fetch_summary(output_s3_bucket , summary_uri)
             result["summary"] = transcription_summary
-            print(f"Summary: {transcription_summary}")
         else:
             transcription_summary = medical_scribe_output.get('ClinicalDocumentText', "No summary found.")
             result["summary"] = transcription_summary
-            print(f"Summary: {transcription_summary}")
         
         return result
