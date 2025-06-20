@@ -47,7 +47,6 @@ class VideoGenerator:
             response = self.bedrock_runtime.get_async_invoke(
                 invocationArn=invocation_arn
             )
-            print(response)
             return response
         except Exception as e:
             raise Exception("Failed to check video generation status")
