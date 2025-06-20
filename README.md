@@ -435,14 +435,29 @@ newberryai nl2sql --gradio
 
 ```python
 from newberryai import VirtualTryOn
-import base64
+
 try_on = VirtualTryOn()
-with open("model.jpg", "rb") as f:
-    model_b64 = base64.b64encode(f.read()).decode()
-with open("garment.jpg", "rb") as f:
-    garment_b64 = base64.b64encode(f.read()).decode()
-request = try_on.TryOnRequest(model_image=model_b64, garment_image=garment_b64, category="tops")
-# See SDK docs for async usage
+
+request = await try_on.process(
+    model_image='vishnu.jpg',
+    garment_image='image.png',
+    category='tops'
+)
+
+async def tryon_demo():
+    job_id = request["job_id"]
+    while True:
+        status = await try_on.get_status(job_id)
+        if status["status"] in ['completed', 'failed']:
+            break
+        await asyncio.sleep(3)
+    if status["status"] == "completed" and status["output"]:
+        print('Generated images:')
+        for url in status["output"]:
+            print(url)
+
+# Run the demo
+await tryon_demo()
 ```
 
 #### CLI
