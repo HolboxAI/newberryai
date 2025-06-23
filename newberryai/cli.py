@@ -3,8 +3,6 @@ import sys
 import os 
 import pandas as pd
 from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
-# from newberryai.face_recognigation import FaceInput
-# from newberryai.face_detection import VideoRequest
 import asyncio
 from pathlib import Path
 import json
