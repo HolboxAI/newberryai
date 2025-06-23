@@ -15,7 +15,7 @@ def get_requirements(file_path:str)->List[str]:
 
 
 
-with open("README.md", "r") as f:
+with open("README.md", "r", encoding="utf-8") as f:
     description = f.read()
 
 setup(

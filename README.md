@@ -355,21 +355,17 @@ newberryai image --gradio
 #### Python SDK
 
 ```python
-from newberryai import FaceRecognition, FaceRequest
-from newberryai.face_recognigation import FaceRequest #Alternative
+from newberryai import FaceRecognition
 face_recognition = FaceRecognition()
-add_response = face_recognition.add_to_collect(FaceRequest(image_path="face.jpg", name="Name"))
-print(add_response.message)
-if add_response.success:
-    print(f"Face ID: {add_response.face_id}")
+add_response = face_recognition.add_to_collect("face.jpg", "Name")
+print(add_response["message"])
+if add_response["success"]:
+    print(f"Face ID: {add_response['face_id']}")
 
-recognize_response = face_recognition.recognize_image(
-    FaceRequest(image_path="vishnu2.jpg")
-)
-print(recognize_response.message)
-if recognize_response.success:
-    print(f"Recognized: {recognize_response.name} (Confidence: {recognize_response.confidence:.2f}%)")
-
+recognize_response = face_recognition.recognize_image("vishnu2.jpg")
+print(recognize_response["message"])
+if recognize_response["success"]:
+    print(f"Recognized: {recognize_response['name']} (Confidence: {recognize_response['confidence']:.2f}%)")
 ```
 
 #### CLI
@@ -388,10 +384,24 @@ newberryai face_recognig --gradio
 
 ```python
 from newberryai import FaceDetection
-from newberryai.face_detection import VideoRequest
 face_detector = FaceDetection()
-response = face_detector.add_face_to_collection("face.jpg", "Name")
-results = face_detector.process_video(VideoRequest(video_path="video.mp4", max_frames=20))
+
+# Add face to collection
+add_response = face_detector.add_face_to_collection("face.jpg", "Name")
+print(add_response["message"])
+if add_response["success"]:
+    print(f"Face ID: {add_response['face_id']}")
+
+# Process video
+results = face_detector.process_video("video.mp4", max_frames=20)
+for detection in results:
+    print(f"\nTimestamp: {detection['timestamp']}s")
+    if detection.get('external_image_id'):
+        print(f"Matched Face: {detection['external_image_id']}")
+        print(f"Face ID: {detection['face_id']}")
+        print(f"Confidence: {detection['confidence']:.2f}%")
+    else:
+        print("No match found in collection")
 ```
 
 #### CLI
@@ -407,25 +417,69 @@ newberryai face_detect --gradio
 
 ### 16. NL2SQL Assistant
 
+The NL2SQL Assistant converts natural language questions into SQL queries and provides query results with statistical summaries.
+
 #### Python SDK
 
 ```python
-from newberryai import NL2SQL, DatabaseConfig, NL2SQLRequest
+from newberryai import NL2SQL
+import json
+
+# Initialize NL2SQL processor
 nl2sql = NL2SQL()
-db_config = DatabaseConfig(host="localhost", user="root", password="pass", database="db")
-nl2sql.connect_to_database(db_config)
-request = NL2SQLRequest(question="Show tables")
-response = nl2sql.process_query(request)
-print(response.generated_sql)
+
+# Set up the database connection parameters
+host = "127.0.0.1"  # or "localhost"
+user = "root"
+password = "your_password"
+database = "your_database"
+port = 3306
+
+# Connect to the database
+nl2sql.connect_to_database(host, user, password, database, port)
+
+# Test a natural language question to SQL conversion
+question = "Show all tables"
+response = nl2sql.process_query(question)
+
+# Print the results: SQL query, data, and summary
+if response["success"]:
+    print(f"Generated SQL Query: {response['sql_query']}")
+    print(f"Data: {json.dumps(response['data'], indent=2)}")
+    print(f"Summary: {response['summary']}")
+else:
+    print(f"Error: {response['message']}")
 ```
+
+The response dictionary contains:
+- `success`: Boolean indicating if the query was successful
+- `message`: Status message or error description
+- `sql_query`: The generated SQL query
+- `data`: Query results as a list of dictionaries
+- `summary`: Statistical summary of the query results
 
 #### CLI
 
 ```sh
-newberryai nl2sql --question "Show tables" --user root --password pass --database db
+# Run a single query
+newberryai nl2sql --question "Show all tables" --host localhost --user root --password your_password --database your_database
+
+# Start interactive mode
 newberryai nl2sql --interactive
+
+# Launch web interface
 newberryai nl2sql --gradio
 ```
+
+#### Environment Variables
+You can set default database connection parameters using environment variables:
+- `DB_HOST`: Database host (default: "localhost")
+- `DB_USER`: Database username
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
+- `DB_PORT`: Database port (default: 3306)
+
+These will be used as defaults in the Gradio interface and CLI interactive mode.
 
 ---
 

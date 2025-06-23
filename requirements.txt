@@ -17,5 +17,4 @@ matplotlib
 seaborn
 python-dotenv
 mysql-connector-python
-pydantic
 faiss-cpu
