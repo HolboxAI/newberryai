@@ -124,11 +124,11 @@ HEALTHSCRIBE_DATA_ACCESS_ROLE=arn:aws:iam::account:role/your-role
 from newberryai import HealthScribe
 scribe = HealthScribe(
     input_s3_bucket='your-input-bucket',
-    data_access_role_arn='arn:aws:iam::992382417943:role/Healthscribe-role'
+    data_access_role_arn='arn:aws:iam::992382417943:role/YOUR-role'
 )
 result = scribe.process(
     file_path=r'YOUR_AUDIO.mp3',
-    job_name='sdktest',
+    job_name='JOB-NAME',
     output_s3_bucket='your-output-bucket'
 )
 print(result["summary"])
