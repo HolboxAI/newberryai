@@ -3,8 +3,6 @@ import sys
 import os 
 import pandas as pd
 from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
-from newberryai.face_recognigation import FaceRequest
-from newberryai.face_detection import VideoRequest
 import asyncio
 from pathlib import Path
 import json
@@ -321,22 +319,19 @@ def face_recognition_command(args):
                 if not args.name:
                     print("Error: Name is required when adding a face")
                     sys.exit(1)
-                request = FaceRequest(image_path=args.image_path, name=args.name)
-                response = face_recognition.add_to_collect(request)
+                response = face_recognition.add_to_collect(args.image_path, args.name)
             else:
-                request = FaceRequest(image_path=args.image_path)
-                response = face_recognition.recognize_image(request)
+                response = face_recognition.recognize_image(args.image_path)
             
             print("\nResult:")
-            print(response.message)
-            if response.success:
-                if response.name:
-                    print(f"Name: {response.name}")
-                if response.confidence:
-                    print(f"Confidence: {response.confidence:.2f}%")
-                if response.face_id:
-                    print(f"Face ID: {response.face_id}")
-                    
+            print(response["message"])
+            if response["success"]:
+                if response.get("name"):
+                    print(f"Name: {response['name']}")
+                if response.get("confidence"):
+                    print(f"Confidence: {response['confidence']:.2f}%")
+                if response.get("face_id"):
+                    print(f"Face ID: {response['face_id']}")
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
             sys.exit(1)
@@ -360,8 +355,8 @@ def nl2sql_command(args):
             sys.exit(1)
             
         try:
-            # Create database config
-            db_config = nl2sql.DatabaseConfig(
+            # Connect to database
+            nl2sql.connect_to_database(
                 host=args.host,
                 user=args.user,
                 password=args.password,
@@ -369,21 +364,16 @@ def nl2sql_command(args):
                 port=args.port
             )
             
-            # Create request
-            request = nl2sql.NL2SQLRequest(
-                question=args.question,
-                db_config=db_config
-            )
-            
             # Process query
-            response = nl2sql.process_query(request)
+            response = nl2sql.process_query(args.question)
             
             print("\nResults:")
-            print(f"Generated SQL: {response.generated_sql}")
-            print(f"Data: {json.dumps(response.data, indent=2)}")
-            print(f"Suggested Chart: {response.best_chart}")
-            print(f"Selected Columns: {json.dumps(response.selected_columns, indent=2)}")
-            print(f"Summary: {response.summary}")
+            if response["success"]:
+                print(f"Generated SQL: {response['sql_query']}")
+                print(f"Data: {json.dumps(response['data'], indent=2)}")
+                print(f"Summary: {response['summary']}")
+            else:
+                print(f"Error: {response['message']}")
             
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
@@ -438,24 +428,18 @@ def face_detection_command(args):
             response = face_detector.add_face_to_collection(args.add_image, args.name)
             
             print("\nResult:")
-            print(response.message)
-            if response.success:
-                print(f"Face ID: {response.face_id}")
+            print(response["message"])
+            if response["success"]:
+                print(f"Face ID: {response['face_id']}")
                     
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
             sys.exit(1)
     elif args.video_path:
         try:
-            # Create request with provided parameters
-            request = VideoRequest(
-                video_path=args.video_path,
-                max_frames=args.max_frames
-            )
-            
             # Process video
             print("Processing video...")
-            results = face_detector.process_video(request)
+            results = face_detector.process_video(args.video_path, args.max_frames)
             
             print("\nDetection Results:")
             for detection in results:

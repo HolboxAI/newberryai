@@ -9,7 +9,7 @@ pyaudio
 sounddevice
 pydub
 textual
-openai
+openai[realtime]
 typing_extensions
 PyMuPDF
 pandas
@@ -17,5 +17,4 @@ matplotlib
 seaborn
 python-dotenv
 mysql-connector-python
-pydantic
 faiss-cpu

@@ -4,7 +4,6 @@ import json
 import datetime
 import mysql.connector
 from typing import Optional, Dict, Any, List, Tuple
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import gradio as gr
 import os
@@ -13,45 +12,20 @@ import openai  # Add OpenAI for NL2SQL conversion
 # Load environment variables
 load_dotenv()
 
-class DatabaseConfig(BaseModel):
-    """Configuration for database connection"""
-    host: str
-    user: str
-    password: str
-    database: str
-    port: int = 3306
-
-class NL2SQLRequest(BaseModel):
-    """Request model for NL2SQL processing"""
-    question: str = Field(..., min_length=1, description="Natural language question to convert to SQL")
-    db_config: Optional[DatabaseConfig] = None
-
-class NL2SQLResponse(BaseModel):
-    """Response model for NL2SQL processing"""
-    generated_sql: Optional[str] = None
-    data: List[Dict[str, Any]] = []
-    best_chart: Optional[str] = None
-    selected_columns: Dict[str, Any] = {}
-    summary: str = ""
-
-def decimal_to_float(obj):
-    """Convert decimal objects to float for JSON serialization"""
-    if isinstance(obj, decimal.Decimal):
-        return float(obj)
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
 class NL2SQL:
     """
-    A class for Natural Language to SQL conversion with visualization and summarization.
+    A class for Natural Language to SQL conversion.
     This class provides functionality to convert natural language questions to SQL queries,
-    execute them, and generate visualizations and summaries.
+    execute them, and provide results with summaries.
     """
     
     def __init__(self):
         """Initialize the NL2SQL processor with default configuration."""
-        self.db_config = None
+        self.host = None
+        self.user = None
+        self.password = None
+        self.database = None
+        self.port = 3306
         self.connection = None
         self.schema_info = None
         # Initialize OpenAI client
@@ -85,19 +59,23 @@ class NL2SQL:
         cursor.close()
         return schema_info
 
-    def connect_to_database(self, config: DatabaseConfig) -> None:
+    def connect_to_database(self, host: str, user: str, password: str, database: str, port: int = 3306) -> None:
         """
         Connect to the MySQL database and fetch schema information.
         """
         try:
             self.connection = mysql.connector.connect(
-                host=config.host,
-                user=config.user,
-                password=config.password,
-                database=config.database,
-                port=config.port
+                host=host,
+                user=user,
+                password=password,
+                database=database,
+                port=port
             )
-            self.db_config = config
+            self.host = host
+            self.user = user
+            self.password = password
+            self.database = database
+            self.port = port
             # Fetch schema information after connection
             self.schema_info = self.get_database_schema()
         except Exception as e:
@@ -125,17 +103,22 @@ class NL2SQL:
 Convert this natural language question to SQL:
 {question}
 
-Return only the SQL query without any explanation."""
+Return only the raw SQL query without any markdown formatting, code blocks, or explanation."""
 
         try:
             response = self.openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a SQL expert. Convert natural language questions to SQL queries."},
+                    {"role": "system", "content": "You are a SQL expert. Convert natural language questions to SQL queries. Return only the raw SQL query without any markdown formatting, code blocks, or explanation."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            return response.choices[0].message.content.strip()
+            sql_query = response.choices[0].message.content.strip()
+            
+            # Clean up any markdown formatting
+            sql_query = sql_query.replace('```sql', '').replace('```', '').strip()
+            
+            return sql_query
         except Exception as e:
             raise Exception(f"Failed to generate SQL: {str(e)}")
 
@@ -160,33 +143,18 @@ Return only the SQL query without any explanation."""
             cursor.execute(sql_query)
             results = cursor.fetchall()
             cursor.close()
+            # Convert decimal and datetime objects for JSON serialization
+            for row in results:
+                for key, value in row.items():
+                    if isinstance(value, decimal.Decimal):
+                        row[key] = float(value)
+                    elif isinstance(value, datetime.datetime):
+                        row[key] = value.isoformat()
             return results
         except Exception as e:
             raise Exception(f"Query execution failed: {str(e)}")
 
-    def suggest_chart(self, question: str, df: pd.DataFrame) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
-        """
-        Suggest appropriate chart type based on data and question.
-        """
-        if df.empty:
-            return None, {}, {}
-
-        # Analyze data types
-        numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
-        categorical_cols = df.select_dtypes(include=['object', 'category']).columns
-        date_cols = df.select_dtypes(include=['datetime64']).columns
-
-        # Determine chart type based on data and question
-        if len(numeric_cols) >= 2:
-            return "scatter", {"x": numeric_cols[0], "y": numeric_cols[1]}, {"title": "Scatter Plot"}
-        elif len(numeric_cols) == 1 and len(categorical_cols) >= 1:
-            return "bar", {"x": categorical_cols[0], "y": numeric_cols[0]}, {"title": "Bar Chart"}
-        elif len(date_cols) >= 1 and len(numeric_cols) >= 1:
-            return "line", {"x": date_cols[0], "y": numeric_cols[0]}, {"title": "Time Series"}
-        else:
-            return "table", {}, {"title": "Data Table"}
-
-    def generate_summary(self, question: str, sql_query: str, df: pd.DataFrame) -> str:
+    def generate_summary(self, df: pd.DataFrame) -> str:
         """
         Generate meaningful summary of the query results.
         """
@@ -209,62 +177,61 @@ Return only the SQL query without any explanation."""
 
         return f"Found {len(df)} results. " + ". ".join(summary_parts)
 
-    def process_query(self, request: NL2SQLRequest) -> NL2SQLResponse:
+    def process_query(self, question: str) -> Dict[str, Any]:
         """
         Process natural language question and return full response.
         
         Args:
-            request (NL2SQLRequest): The NL2SQL request parameters
+            question (str): The natural language question to process
             
         Returns:
-            NL2SQLResponse: Complete response with SQL, data, chart, and summary
+            Dict[str, Any]: Complete response with SQL, data, and summary
         """
         try:
-            # Connect to database if config provided
-            if request.db_config:
-                self.connect_to_database(request.db_config)
-
             # Generate SQL
-            sql_query = self.generate_sql(request.question)
+            sql_query = self.generate_sql(question)
             if not sql_query:
-                raise Exception("SQL query generation failed")
+                return {
+                    "success": False,
+                    "message": "SQL query generation failed",
+                    "sql_query": None,
+                    "data": [],
+                    "summary": "Failed to generate SQL query"
+                }
 
             # Execute query
             result_data = self.execute_query(sql_query)
             if not result_data:
-                return NL2SQLResponse(
-                    generated_sql=sql_query,
-                    data=[],
-                    best_chart=None,
-                    selected_columns={},
-                    summary="No data available for this query."
-                )
+                return {
+                    "success": True,
+                    "message": "Query executed successfully but returned no data",
+                    "sql_query": sql_query,
+                    "data": [],
+                    "summary": "No data available for this query."
+                }
 
-            # Convert to DataFrame
+            # Convert to DataFrame for summary generation
             df = pd.DataFrame(result_data)
 
-            # Suggest chart
-            best_chart, selected_columns, other_settings = self.suggest_chart(request.question, df)
-
             # Generate summary
-            summary = self.generate_summary(request.question, sql_query, df)
+            summary = self.generate_summary(df)
 
-            return NL2SQLResponse(
-                generated_sql=sql_query,
-                data=result_data,
-                best_chart=best_chart,
-                selected_columns=selected_columns,
-                summary=summary
-            )
+            return {
+                "success": True,
+                "message": "Query processed successfully",
+                "sql_query": sql_query,
+                "data": result_data,
+                "summary": summary
+            }
 
         except Exception as e:
-            return NL2SQLResponse(
-                generated_sql=None,
-                data=[],
-                best_chart=None,
-                selected_columns={},
-                summary=f"Error occurred: {str(e)}"
-            )
+            return {
+                "success": False,
+                "message": str(e),
+                "sql_query": None,
+                "data": [],
+                "summary": f"Error occurred: {str(e)}"
+            }
 
     def start_gradio(self):
         """
@@ -279,10 +246,10 @@ Return only the SQL query without any explanation."""
         default_port = int(os.getenv("DB_PORT", 3306))
 
         def process_query_interface(question: str, host: str, user: str, password: str, 
-                                 database: str, port: int) -> Tuple[Optional[str], str, Optional[str], str, str]:
+                                 database: str, port: int) -> Tuple[str, str, str]:
             """Gradio interface function for NL2SQL processing"""
             try:
-                db_config = DatabaseConfig(
+                self.connect_to_database(
                     host=host,
                     user=user,
                     password=password,
@@ -290,20 +257,15 @@ Return only the SQL query without any explanation."""
                     port=port
                 )
                 
-                request = NL2SQLRequest(
-                    question=question,
-                    db_config=db_config
-                )
-                
-                response = self.process_query(request)
+                response = self.process_query(question)
                 return (
-                    response.generated_sql,
-                    json.dumps(response.data, indent=2, default=decimal_to_float),
-                    response.summary
+                    response["sql_query"] or "",
+                    json.dumps(response["data"], indent=2),
+                    response["summary"]
                 )
             except Exception as e:
                 return (
-                    None,
+                    "",
                     "[]",
                     f"Error: {str(e)}"
                 )
@@ -354,15 +316,13 @@ Return only the SQL query without any explanation."""
             database = input("Database name: ")
             port = int(input("Port [3306]: ") or "3306")
             
-            db_config = DatabaseConfig(
+            self.connect_to_database(
                 host=host,
                 user=user,
                 password=password,
                 database=database,
                 port=port
             )
-            
-            self.connect_to_database(db_config)
             print("\nDatabase connection established successfully!")
             
         except Exception as e:
@@ -379,13 +339,15 @@ Return only the SQL query without any explanation."""
                 break
             
             try:
-                request = NL2SQLRequest(question=question)
-                response = self.process_query(request)
+                response = self.process_query(question)
                 
                 print("\nResults:")
-                print(f"Generated SQL: {response.generated_sql}")
-                print(f"Data: {json.dumps(response.data, indent=2)}")
-                print(f"Summary: {response.summary}")
+                if response["success"]:
+                    print(f"Generated SQL: {response['sql_query']}")
+                    print(f"Data: {json.dumps(response['data'], indent=2)}")
+                    print(f"Summary: {response['summary']}")
+                else:
+                    print(f"Error: {response['message']}")
                 
             except Exception as e:
                 print(f"Error: {str(e)}")

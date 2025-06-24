@@ -1,31 +1,11 @@
 import boto3
 import cv2
 import os
-
 import gradio as gr
-from typing import Optional, Dict, Any
 from dotenv import load_dotenv
-from fastapi import HTTPException
-import numpy as np
 
 # Load environment variables
 load_dotenv()
-
-class FaceRequest:
-    """Class for face recognition request parameters."""
-    def __init__(self, image_path: str, name: Optional[str] = None):
-        self.image_path = image_path
-        self.name = name
-
-class FaceResponse:
-    """Class for face recognition response."""
-    def __init__(self, success: bool, message: str, name: Optional[str] = None, 
-                 confidence: Optional[float] = None, face_id: Optional[str] = None):
-        self.success = success
-        self.message = message
-        self.name = name
-        self.confidence = confidence
-        self.face_id = face_id
 
 class FaceRecognition:
     """
@@ -34,124 +14,103 @@ class FaceRecognition:
     """
     
     def __init__(self):
-        """Initialize the FaceRecognition with AWS client and configuration."""
         self.rekognition_client = boto3.client("rekognition", region_name="us-east-1")
         self.face_collection_id = os.getenv('FACE_COLLECTION_ID', 'face-db-001')
-        
-        # Create collection if it doesn't exist
         try:
             self.rekognition_client.create_collection(CollectionId=self.face_collection_id)
-            
         except self.rekognition_client.exceptions.ResourceAlreadyExistsException:
             pass
 
-    def add_to_collect(self, request: FaceRequest) -> FaceResponse:
+    def add_to_collect(self, image_path, name):
         """
         Add a face to the AWS Rekognition collection.
-        
         Args:
-            request (FaceRequest): The face addition request parameters
-            
+            image_path (str): Path to the image file
+            name (str): Name to associate with the face
         Returns:
-            FaceResponse: Information about the added face
-            
-        Raises:
-            HTTPException: If there's an error adding the face
+            dict: Information about the added face
         """
         try:
-            # Read and validate image using OpenCV
-            image = cv2.imread(request.image_path)
+            image = cv2.imread(image_path)
             if image is None:
-                raise HTTPException(status_code=400, detail="Invalid image file or format")
-
-            # Convert image to RGB (AWS Rekognition expects RGB)
+                raise ValueError("Invalid image file or format")
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
-            # Convert to JPEG format
             _, img_encoded = cv2.imencode('.jpg', image_rgb)
             image_bytes = img_encoded.tobytes()
-            
-            # Index the face in the collection
             response = self.rekognition_client.index_faces(
                 CollectionId=self.face_collection_id,
                 Image={'Bytes': image_bytes},
-                ExternalImageId=request.name.strip(),
+                ExternalImageId=name.strip(),
                 DetectionAttributes=['ALL']
             )
-            
             if not response['FaceRecords']:
-                return FaceResponse(
-                    success=False,
-                    message="No face detected in the image"
-                )
-            
-            return FaceResponse(
-                success=True,
-                message="Face added successfully",
-                face_id=response['FaceRecords'][0]['Face']['FaceId'],
-                name=request.name
-            )
-        
+                return {
+                    'success': False,
+                    'message': 'No face detected in the image',
+                    'face_id': None,
+                    'name': name
+                }
+            return {
+                'success': True,
+                'message': 'Face added successfully',
+                'face_id': response['FaceRecords'][0]['Face']['FaceId'],
+                'name': name
+            }
         except Exception as e:
-            return FaceResponse(
-                success=False,
-                message=f"Error adding face to collection: {str(e)}"
-            )
+            return {
+                'success': False,
+                'message': f'Error adding face to collection: {str(e)}',
+                'face_id': None,
+                'name': name
+            }
 
-    def recognize_image(self, request: FaceRequest) -> FaceResponse:
+    def recognize_image(self, image_path):
         """
         Recognize a face in the given image by comparing it with faces in the collection.
-        
         Args:
-            request (FaceRequest): The face recognition request parameters
-            
+            image_path (str): Path to the image file
         Returns:
-            FaceResponse: Information about the recognized face
+            dict: Information about the recognized face
         """
         try:
-            # Read and validate image using OpenCV
-            image = cv2.imread(request.image_path)
+            image = cv2.imread(image_path)
             if image is None:
-                return FaceResponse(
-                    success=False,
-                    message="Invalid image file or format"
-                )
-
-            # Convert image to RGB
+                return {
+                    'success': False,
+                    'message': 'Invalid image file or format',
+                    'name': None,
+                    'confidence': None
+                }
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
-            # Convert to JPEG format
             _, img_encoded = cv2.imencode('.jpg', image_rgb)
             image_bytes = img_encoded.tobytes()
-            
-            # Search for the face in the collection
             response = self.rekognition_client.search_faces_by_image(
                 CollectionId=self.face_collection_id,
                 Image={'Bytes': image_bytes},
                 MaxFaces=1,
-                FaceMatchThreshold=70  # Minimum confidence threshold
+                FaceMatchThreshold=70
             )
-            
             if not response['FaceMatches']:
-                return FaceResponse(
-                    success=False,
-                    message="No matching face found"
-                )
-            
-            # Get the best match
+                return {
+                    'success': False,
+                    'message': 'No matching face found',
+                    'name': None,
+                    'confidence': None
+                }
             best_match = response['FaceMatches'][0]
-            return FaceResponse(
-                success=True,
-                message="Face recognized",
-                name=best_match['Face']['ExternalImageId'],
-                confidence=best_match['Similarity']
-            )
-        
+            return {
+                'success': True,
+                'message': 'Face recognized',
+                'name': best_match['Face']['ExternalImageId'],
+                'confidence': best_match['Similarity']
+            }
         except Exception as e:
-            return FaceResponse(
-                success=False,
-                message=f"Error recognizing face: {str(e)}"
-            )
+            return {
+                'success': False,
+                'message': f'Error recognizing face: {str(e)}',
+                'name': None,
+                'confidence': None
+            }
 
     def start_gradio(self):
         """
@@ -159,45 +118,30 @@ class FaceRecognition:
         This provides a web-based UI for adding and recognizing faces.
         """
         def add_face_interface(image, name):
-            """Gradio interface function for adding faces"""
             try:
-                # Save the uploaded image temporarily
                 temp_path = "temp_face.jpg"
                 cv2.imwrite(temp_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-                
-                request = FaceRequest(image_path=temp_path, name=name)
-                response = self.add_to_collect(request)
-                
-                # Clean up temporary file
+                response = self.add_to_collect(temp_path, name)
                 os.remove(temp_path)
-                
-                if response.success:
+                if response['success']:
                     return f"Success: Face of {name} added to collection!"
                 else:
-                    return f"Error: {response.message}"
+                    return f"Error: {response['message']}"
             except Exception as e:
                 return f"Error: {str(e)}"
 
         def recognize_face_interface(image):
-            """Gradio interface function for recognizing faces"""
             try:
-                # Save the uploaded image temporarily
                 temp_path = "temp_face.jpg"
                 cv2.imwrite(temp_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-                
-                request = FaceRequest(image_path=temp_path)
-                response = self.recognize_image(request)
-                
-                # Clean up temporary file
+                response = self.recognize_image(temp_path)
                 os.remove(temp_path)
-                
-                if response.success:
-                    return f"Recognized: {response.name} (Confidence: {response.confidence:.2f}%)"
-                return response.message
+                if response['success']:
+                    return f"Recognized: {response['name']} (Confidence: {response['confidence']:.2f}%)"
+                return response['message']
             except Exception as e:
                 return f"Error: {str(e)}"
 
-        # Create Gradio interface with improved UI
         with gr.Blocks(title="Face Recognition System", css="""
             .image-preview img {max-width: 400px !important; max-height: 300px !important; border-radius: 10px; box-shadow: 0 2px 8px #0002;}
             .gradio-container {padding: 24px;}
@@ -205,7 +149,6 @@ class FaceRecognition:
             .gr-row {gap: 24px;}
         """) as interface:
             gr.Markdown("# Face Recognition System")
-            
             with gr.Tab("Add Face to Collection"):
                 with gr.Row():
                     with gr.Column():
@@ -213,76 +156,61 @@ class FaceRecognition:
                         add_name = gr.Textbox(label="Enter Name")
                         add_button = gr.Button("Add Face")
                         add_output = gr.Textbox(label="Result")
-                
                 add_button.click(
                     fn=add_face_interface,
                     inputs=[add_image, add_name],
                     outputs=add_output
                 )
-            
             with gr.Tab("Recognize Face"):
                 with gr.Row():
                     with gr.Column():
                         rec_image = gr.Image(label="Upload Face Image", elem_classes=["image-preview"])
                         rec_button = gr.Button("Recognize Face")
                         rec_output = gr.Textbox(label="Result")
-                
                 rec_button.click(
                     fn=recognize_face_interface,
                     inputs=[rec_image],
                     outputs=rec_output
                 )
-        
         return interface.launch(share=True)
 
     def run_cli(self):
-        """
-        Run an interactive command-line interface for face recognition.
-        """
         print("Face Recognition System initialized")
         print("Type 'exit' or 'quit' to end the conversation.")
         print("\nAvailable commands:")
         print("  - add <image_path> <name>: Add a face to the collection")
         print("  - recognize <image_path>: Recognize a face in an image")
-        
         while True:
             user_input = input("\nEnter command: ")
             if user_input.lower() in ["exit", "quit"]:
                 print("Goodbye!")
                 break
-            
             try:
                 parts = user_input.split()
                 if len(parts) < 2:
                     print("Invalid command. Please use 'add' or 'recognize' followed by the image path.")
                     continue
-                
                 command = parts[0].lower()
                 image_path = parts[1]
-                
                 if command == "add":
                     if len(parts) < 3:
                         print("Please provide both image path and name for adding a face.")
                         continue
                     name = parts[2]
-                    request = FaceRequest(image_path=image_path, name=name)
-                    response = self.add_to_collect(request)
+                    response = self.add_to_collect(image_path, name)
                 elif command == "recognize":
-                    request = FaceRequest(image_path=image_path)
-                    response = self.recognize_image(request)
+                    response = self.recognize_image(image_path)
                 else:
                     print("Invalid command. Please use 'add' or 'recognize'.")
                     continue
-                
-                print(response.message)
-                if response.success:
-                    if response.name:
-                        print(f"Name: {response.name}")
-                    if response.confidence:
-                        print(f"Confidence: {response.confidence:.2f}%")
-                    if response.face_id:
-                        print(f"Face ID: {response.face_id}")
-                
+                print(response['message'])
+                if response['success']:
+                    if response.get('name'):
+                        print(f"Name: {response['name']}")
+                    if response.get('confidence'):
+                        print(f"Confidence: {response['confidence']:.2f}%")
+                    if response.get('face_id'):
+                        print(f"Face ID: {response['face_id']}")
             except Exception as e:
                 print(f"Error: {str(e)}")
 

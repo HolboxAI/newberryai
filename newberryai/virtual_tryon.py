@@ -13,10 +13,6 @@ import mimetypes
 # Load environment variables
 load_dotenv()
 
-# Create output directory if it doesn't exist
-OUTPUT_DIR = Path("virtual_tryon_output")
-OUTPUT_DIR.mkdir(exist_ok=True)
-
 class VirtualTryOn:
     """
     A class for virtual try-on using the Fashn API.
