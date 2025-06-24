@@ -9,7 +9,7 @@ pyaudio
 sounddevice
 pydub
 textual
-openai
+openai[realtime]
 typing_extensions
 PyMuPDF
 pandas

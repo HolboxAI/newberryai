@@ -692,7 +692,35 @@ newberryai tryon --model_image model.jpg --garment_image image.png --category to
 newberryai tryon --interactive
 newberryai tryon --gradio
 ```
+
 ---
+
+## 18. Speech-to-Speech
+
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### Python SDK
+```python
+# Real-time voice interaction with an AI assistant.
+from newberryai.speechtospeech import RealtimeApp
+
+# Ensure you have set your OPENAI_API_KEY environment variable
+# and installed necessary audio drivers and dependencies (`pip install "openai[realtime]"`).
+app = RealtimeApp()
+app.run()
+```
+
+### CLI Usage
+```sh
+newberryai speech_to_speech
+```
+
+---
+
 ## ⚙️Requirements
 
 - Python 3.8+
