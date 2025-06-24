@@ -123,13 +123,13 @@ HEALTHSCRIBE_DATA_ACCESS_ROLE=arn:aws:iam::account:role/your-role
 # Medical transcription using AWS HealthScribe. Requires AWS credentials.
 from newberryai import HealthScribe
 scribe = HealthScribe(
-    input_s3_bucket='dax-healthscribe-v2',
+    input_s3_bucket='your-input-bucket',
     data_access_role_arn='arn:aws:iam::992382417943:role/Healthscribe-role'
 )
 result = scribe.process(
     file_path=r'YOUR_AUDIO.mp3',
     job_name='sdktest',
-    output_s3_bucket='dax-healthscribe-v2'
+    output_s3_bucket='your-output-bucket'
 )
 print(result["summary"])
 ```
