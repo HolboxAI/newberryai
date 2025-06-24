@@ -1,304 +1,455 @@
-# NewberryAI
+# NewberryAI 
 
-**AI-powered toolkit for healthcare, compliance, document analysis, and more.**
+**The complete AI toolkit that turns complex workflows into simple Python commands. From medical diagnosis to compliance checking, document analysis to face recognition - NewberryAI brings enterprise-grade AI capabilities to your fingertips.**
 
 ---
 
-- **Compliance Checker**: Analyze videos for regulatory compliance
-- **HealthScribe**: Medical transcription using AWS HealthScribe
-- **Differential Diagnosis (DDx) Assistant**: Get assistance with clinical diagnosis
-- **Excel Formula Generator AI Assistant**: Get assistance with Excel Formulas
-- **Medical Bill Extractor**: Extract and analyze data from medical bills
-- **Coding Assistant**: Analyze code and help you with coding as debugger
-- **Speech to speech assistant**: Real-time voice interactive assistant
-- **PII Redactor AI assistant**: Analyze text and remove PII (personally identifiable information) from the text
-- **PII extractor AI assistant**: Analyze text and extract PII (personally identifiable information) from the text
-- **EDA AI assistant**: Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis.
-- **PDF Summarizer**: Extract and summarize content from PDF documents
-- **PDF Extractor**: Extract and query content from PDF documents using embeddings and semantic search
-- **Video Generator**: Generate videos from text using Amazon Bedrock's Nova model
-- **Image Generator**: Generate images from text using Amazon Bedrock's Titan Image Generator
-- **Face Recognition**: Add and recognize faces using AWS Rekognition
-- **Face Detection**: Process videos and detect faces using AWS Rekognition
-- **Natural Language to SQL (NL2SQL) Assistant**: Generate SQL queries from natural language
-- **Virtual Try-On**: Generate virtual try-on images using AI
+## Installation
 
-
-
-## 🛠️ Installation
-
-```sh
+```bash
 pip install newberryai
 ```
 
-## 📚 Feature Usage
+### Troubleshooting Installation Issues
+## If you encounter issues installing pyaudio or related audio dependencies, try the following:
 
-### 1. Compliance Checker
+ # For Ubuntu/Debian systems:
+ ```bash
+bashsudo apt-get install -y portaudio19-dev
+pip install pyaudio
+```
+## For other systems:
 
-#### Python SDK
+# macOS: 
+```bash 
+brew install portaudio then pip install pyaudio
+```
+# Windows: 
+Download pre-compiled wheels from 
+"https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio"
+and 
+```bash 
+pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
+```
+ ***replace the filename with the one you downloaded***
 
+## 📚Features
+
+### 🏥 Healthcare & Medical
+- **HealthScribe**: Medical transcription with AWS HealthScribe
+- **Differential Diagnosis Assistant(DDX)**: Clinical diagnosis support
+- **Medical Bill Extractor**: Automated medical billing analysis
+
+### 🔒 Compliance & Security
+- **Compliance Checker**: Video analysis for regulatory compliance
+- **PII Redactor**: Remove personally identifiable information
+- **PII Extractor**: Extract and categorize sensitive data
+
+### 📊 Data & Analytics
+- **EDA Assistant**: Automated exploratory data analysis
+- **NL2SQL**: Natural language to SQL query conversion
+- **Excel Formula Generator**: AI-powered Excel formula creation
+
+### 📄 Document Processing
+- **PDF Summarizer**: Intelligent document summarization
+- **PDF Extractor**: Semantic search and content extraction
+
+### 🎨 Media Generation
+- **Video Generator**: Text-to-video with Amazon Bedrock Nova
+- **Image Generator**: Text-to-image with Titan Image Generator
+- **Virtual Try-On**: AI-powered fashion visualization
+
+### 🔍 Computer Vision
+- **Face Recognition**: Identity management with AWS Rekognition
+- **Face Detection**: Video face detection and tracking
+
+### 💻 Development Tools
+- **Coding Assistant**: Code review and debugging support
+- **Speech-to-Speech**: Real-time voice interaction
+
+## 1. Compliance Checker
+
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
 ```python
+#Analyze videos for regulatory compliance. Requires AWS credentials.
 from newberryai import ComplianceChecker
+
 checker = ComplianceChecker()
-result, status_code = checker.check_compliance("video.mp4", "Is the video compliant with safety regulations?")
-print(f'Compliant: {"Yes" if result["compliant"] else "No"}')
-print(f'Analysis: {result["analysis"]}')
+video_file = 'YOUR.mp4'
+compliance_question = 'Is the video compliant with safety regulations such as mask?'
+
+result, status_code = checker.check_compliance(
+    video_file=video_file,
+    prompt=compliance_question
+)
+if status_code:
+    print(f'Error: {result.get("error", "Unknown error")})')
+else:
+    print(f'Compliant: {"Yes" if result["compliant"] else "No"}')
+    print(f'Analysis: {result["analysis"]}')
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai compliance --video_file path/to/video.mp4 --question "Is the video compliant with safety regulations?"
-```
-
-#### Gradio
-
-```sh
+newberryai compliance --video_file YOUR.mp4 --question "Is the video compliant with safety regulations such as mask?"
 newberryai compliance --gradio
 ```
 
 ---
 
-### 2. HealthScribe
+## 2. HealthScribe
 
-#### Python SDK
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+HEALTHSCRIBE_INPUT_BUCKET=your-healthscribe-input-bucket
+HEALTHSCRIBE_OUTPUT_BUCKET=your-healthscribe-output-bucket
+HEALTHSCRIBE_DATA_ACCESS_ROLE=arn:aws:iam::account:role/your-role
+```
 
+### Python SDK
 ```python
+# Medical transcription using AWS HealthScribe. Requires AWS credentials.
 from newberryai import HealthScribe
 scribe = HealthScribe(
-    input_s3_bucket="your-bucket",
-    data_access_role_arn="arn:aws:iam::account:role/your-role"
+    input_s3_bucket='dax-healthscribe-v2',
+    data_access_role_arn='arn:aws:iam::992382417943:role/Healthscribe-role'
 )
 result = scribe.process(
-    file_path="audio.wav",
-    job_name="job1",
-    output_s3_bucket="your-bucket"
+    file_path=r'YOUR_AUDIO.mp3',
+    job_name='sdktest',
+    output_s3_bucket='dax-healthscribe-v2'
 )
 print(result["summary"])
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai healthscribe --file_path audio.wav --job_name job1 --data_access_role_arn arn:aws:iam::account:role/your-role --input_s3_bucket your-bucket --output_s3_bucket your-bucket
+newberryai healthscribe --file_path YOUR_AUDIO.mp3 --job_name sdktest --output_s3_bucket dax-healthscribe-v2
+newberryai healthscribe --gradio
 ```
 
 ---
 
-### 3. Differential Diagnosis
+## 3. Differential Diagnosis (DDx) Assistant
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Get assistance with clinical diagnosis.
 from newberryai import DDxChat
-ddx = DDxChat()
-response = ddx.ask("Patient presents with fever, cough, and fatigue for 5 days")
+
+ddx_chat = DDxChat()
+response = ddx_chat.ask('Patient presents with fever, cough, and fatigue for 5 days')
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai ddx --clinical_indication "Patient presents with fever, cough, and fatigue for 5 days"
+newberryai ddx --question "Patient presents with fever, cough, and fatigue for 5 days"
 newberryai ddx --interactive
 newberryai ddx --gradio
 ```
 
 ---
 
-### 4. Excel Formula Generator
+## 4. Excel Formula Generator AI Assistant
 
-#### Python SDK
+# Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Get assistance with Excel formulas.
 from newberryai import ExcelExp
-excel = ExcelExp()
-response = excel.ask("Give me an Excel formula to calculate average sales for 2010 and 2011")
+
+excel_expert = ExcelExp()
+response = excel_expert.ask(
+"Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
+)
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai ExcelO --Excel_query "Give me an Excel formula to calculate average sales for 2010 and 2011"
-newberryai ExcelO --interactive
-newberryai ExcelO --gradio
+newberryai excel --question "Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
+newberryai excel --interactive
+newberryai excel --gradio
 ```
 
 ---
 
-### 5. Medical Bill Extractor
+## 5. Medical Bill Extractor
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+```
 
+### Python SDK
 ```python
+#Extract and analyze data from medical bills.
 from newberryai import Bill_extractor
+
 extractor = Bill_extractor()
-analysis = extractor.analyze_document("medical_bill.jpg")
+analysis = extractor.analyze_document('Billimg.jpg')
 print(analysis)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai bill_extract --file_path medical_bill.jpg
-newberryai bill_extract --interactive
-newberryai bill_extract --gradio
+newberryai bill --file_path Billimg.jpg
+newberryai bill --interactive
+newberryai bill --gradio
 ```
 
 ---
 
-### 6. Coding Assistant
+## 6. Coding and Debugging AI Assistant
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Analyze code and help you with coding as debugger.
 from newberryai import CodeReviewAssistant
-debugger = CodeReviewAssistant()
-response = debugger.ask("Explain and correct this code: ...")
+
+code_debugger = CodeReviewAssistant()
+response = code_debugger.ask('''Explain and correct below code
+def calculate_average(nums):
+sum = 0
+for num in nums:
+sum += num
+average = sum / len(nums)
+return average
+
+numbers = [10, 20, 30, 40, 50]
+result = calculate_average(numbers)
+print("The average is:", results)''')
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai Coder --code_query "Explain and correct this code: ..."
-newberryai Coder --interactive
-newberryai Coder --gradio
+newberryai code --question "Explain and correct below code
+def calculate_average(nums):
+sum = 0
+for num in nums:
+sum += num
+average = sum / len(nums)
+return average
+
+numbers = [10, 20, 30, 40, 50]
+result = calculate_average(numbers)
+print(\"The average is:\", results)"
+
+newberryai code --interactive
+newberryai code --gradio
 ```
 
 ---
 
-### 7. PII Redactor
+## 7. PII Redactor AI Assistant
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Analyze text and remove PII (personally identifiable information) from the text.
 from newberryai import PII_Redaction
+
 pii_red = PII_Redaction()
-response = pii_red.ask("Patient name is John Doe with fever. Email: john.doe@email.com")
+response = pii_red.ask("Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com")
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai PII_Red --text "Patient name is John Doe with fever. Email: john.doe@email.com"
-newberryai PII_Red --interactive
-newberryai PII_Red --gradio
+newberryai pii --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
+newberryai pii --interactive
+newberryai pii --gradio
 ```
 
 ---
 
-### 8. PII Extractor
+## 8. PII Extractor AI Assistant
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Analyze text and extract PII (personally identifiable information) from the text.
 from newberryai import PII_extraction
+
 pii_extract = PII_extraction()
-response = pii_extract.ask("Patient name is John Doe with fever. Email: john.doe@email.com")
+response = pii_extract.ask("Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com")
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai PII_extract --text "Patient name is John Doe with fever. Email: john.doe@email.com"
-newberryai PII_extract --interactive
-newberryai PII_extract --gradio
+newberryai pii --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
+newberryai pii --interactive
+newberryai pii --gradio
 ```
 
 ---
 
-### 9. EDA Assistant
+## 9. EDA AI assistant
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis
+
 from newberryai import EDA
 import pandas as pd
+
 eda = EDA()
-eda.current_data = pd.read_csv("data.csv")
-response = eda.ask("What is the average value of column 'Sales'?")
-print(response)
+eda.current_data = pd.read_csv(r'your_csv.csv')
 
-# Visualizations
-eda.visualize_data('dist')
-eda.visualize_data('corr')
-eda.visualize_data('cat')
-eda.visualize_data('time')
+response = eda.ask("What is the average value of column 'xyz'?")
+print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai eda --file_path data.csv --interactive
-newberryai eda --file_path data.csv --gradio
+newberryai eda --file_path your_csv.csv --question "What is the average value of column 'target'?"
+newberryai eda --interactive
+newberryai eda --gradio
 ```
 
 ---
 
-### 10. PDF Summarizer
+## 10. PDF Document Summarizer
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Extract and summarize content from PDF documents.
 from newberryai import DocSummarizer
+
 summarizer = DocSummarizer()
-response = summarizer.ask("document.pdf")
+response = summarizer.ask(r'YOUR-pdf.pdf')
 print(response)
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai pdf_summarizer --file_path document.pdf
-newberryai pdf_summarizer --interactive
-newberryai pdf_summarizer --gradio
+newberryai doc --file_path YOUR-pdf.pdf --question "Extract and summarize content from PDF documents."
+newberryai doc --interactive
+newberryai doc --gradio
 ```
 
 ---
 
-### 11. PDF Extractor
+## 11. PDF Extractor
 
-#### Python SDK
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
 
+### Python SDK
 ```python
+#Extract and query content from PDF documents using embeddings and semantic search. (Async usage)
+
 import asyncio
 from newberryai import PDFExtractor
-async def extract():
+
+async def pdf_extract_demo():
     extractor = PDFExtractor()
-    pdf_id = await extractor.process_pdf("document.pdf")
-    response = await extractor.ask_question(pdf_id, "What is the main point?")
-    print(response["answer"])
-asyncio.run(extract())
+    pdf_id = await extractor.process_pdf(r'YOUR-pdf.pdf')
+    response = await extractor.ask_question(pdf_id, 'What is the mode of review in the document?')
+    print(response['answer'])
+    print("\nSource Chunks:")
+    for chunk in response['source_chunks']:
+        print(f"\n---\n{chunk}")
+
+#To run the async demo in a notebook cell:
+await pdf_extract_demo()
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai pdf_extract --file_path document.pdf --question "What is the main point?"
-newberryai pdf_extract --interactive
-newberryai pdf_extract --gradio
+newberryai pdf --file_path YOUR-pdf.pdf --question "What is the mode of review in the document?"
+newberryai pdf --interactive
+newberryai pdf --gradio
 ```
 
 ---
 
-### 12. Video Generator
+## 12. Video Generator
 
-#### Python SDK
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+BEDROCK_REGION=us-east-1
+BEDROCK_MODEL_ID=amazon.nova-canvas-v1:0
+```
 
+### Python SDK
 ```python
+#Generate videos from text using Amazon Bedrock's Nova model. Requires AWS credentials.
+# Example usage
 from newberryai import VideoGenerator
 generator = VideoGenerator()
+prompt = "A cat dancing on a wall"
 async def run_video():
     response = await generator.generate(
-        text= "A cat dancing on a wall",
-        duration_seconds=6, #Optional
-        fps=24, #Optional
-        dimension="1280x720", #Optional
-        seed=42 #Optional
+        text=prompt,
+        duration_seconds=6,
+        fps=24,
+        dimension="1280x720",
+        seed=42
     )
     print(response["message"])
     print("Waiting for video to complete...")
@@ -308,25 +459,35 @@ async def run_video():
 await run_video()
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai video --text "A beautiful sunset over the ocean" --duration 10 --fps 30 --dimension 1920x1080 --output video.mp4
+newberryai video --text "A cat dancing on a wall" --duration_seconds 6 --fps 24 --dimension 1280x720 --seed 42
 newberryai video --interactive
 newberryai video --gradio
 ```
 
 ---
 
-### 13. Image Generator
+## 13. Image Generator
 
-#### Python SDK
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+BEDROCK_REGION=us-east-1
+BEDROCK_MODEL_ID=amazon.titan-image-generator-v1
+```
 
+### Python SDK
 ```python
 from newberryai.image_generator import ImageGenerator
+import asyncio
+
 generator = ImageGenerator()
+prompt = "A lotus in a pond"
 result = await generator.generate(
-    text= "A lotus in a muddy pond",
+    text= prompt,
     width=512,
     height=512,
     number_of_images=1,
@@ -340,60 +501,80 @@ for path in result["images"]:
     print(f"Generated image path: {path}")
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai image --text "A lotus in a muddy pond" --width 512 --height 512 --number_of_images 1 --quality standard
+newberryai image --text "A lotus in a pond" --width 512 --height 512 --number_of_images 1 --cfg_scale 8 --seed 42 --quality standard
 newberryai image --interactive
 newberryai image --gradio
 ```
 
 ---
 
-### 14. Face Recognition
+## 14. Face Recognition
 
-#### Python SDK
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+REKOGNITION_COLLECTION_ID=your-collection-id
+REKOGNITION_REGION=us-east-1
+```
 
+### Python SDK
 ```python
+# Import the FaceRecognition class
 from newberryai import FaceRecognition
-face_recognition = FaceRecognition()
-add_response = face_recognition.add_to_collect("face.jpg", "Name")
-print(add_response["message"])
-if add_response["success"]:
-    print(f"Face ID: {add_response['face_id']}")
 
-recognize_response = face_recognition.recognize_image("vishnu2.jpg")
+# Initialize face recognition
+face_recognition = FaceRecognition()
+
+# Add a face to the collection and recognize a face in one go
+add_response = face_recognition.add_to_collect("yourimg.jpeg", "Name")
+print(add_response["message"], f"Face ID: {add_response.get('face_id', 'N/A')}")
+
+# Recognize a face from another image
+recognize_response = face_recognition.recognize_image("yourimg2.jpeg")
 print(recognize_response["message"])
 if recognize_response["success"]:
     print(f"Recognized: {recognize_response['name']} (Confidence: {recognize_response['confidence']:.2f}%)")
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai face_recognig --image_path face.jpg --add --name "Name"
-newberryai face_recognig --interactive
-newberryai face_recognig --gradio
+newberryai face --image_path yourimg.jpeg --name Name
+newberryai face --image_path yourimg2.jpeg --recognize
+newberryai face --interactive
+newberryai face --gradio
 ```
 
 ---
 
-### 15. Face Detection
+## 15. Face Detection
 
-#### Python SDK
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+REKOGNITION_COLLECTION_ID=your-collection-id
+REKOGNITION_REGION=us-east-1
+```
 
+### Python SDK
 ```python
-from newberryai import FaceDetection
+# Import and initialize FaceDetection class
+from newberryai.face_detection import FaceDetection
 face_detector = FaceDetection()
 
 # Add face to collection
-add_response = face_detector.add_face_to_collection("face.jpg", "Name")
+add_response = face_detector.add_face_to_collection("yourimg.jpeg", "kirti")
 print(add_response["message"])
 if add_response["success"]:
     print(f"Face ID: {add_response['face_id']}")
 
 # Process video
-results = face_detector.process_video("video.mp4", max_frames=20)
+results = face_detector.process_video("yourvideo.mp4", max_frames=20)
 for detection in results:
     print(f"\nTimestamp: {detection['timestamp']}s")
     if detection.get('external_image_id'):
@@ -404,35 +585,44 @@ for detection in results:
         print("No match found in collection")
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai face_detect --add_image face.jpg --name "Name"
-newberryai face_detect --video_path video.mp4 --max_frames 20
-newberryai face_detect --interactive
-newberryai face_detect --gradio
+newberryai face --image_path yourimg.jpeg --add_to_collection
+newberryai face --video_path yourvideo.mp4 --max_frames 20
+newberryai face --interactive
+newberryai face --gradio
 ```
 
 ---
 
-### 16. NL2SQL Assistant
+## 16. NL2SQL
 
-The NL2SQL Assistant converts natural language questions into SQL queries and provides query results with statistical summaries.
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+# Database Configuration
+DB_HOST=localhost
+DB_USER=your_db_username
+DB_PASSWORD=your_db_password
+DB_NAME=your_database_name
+DB_PORT=3306
+```
 
-#### Python SDK
-
+### Python SDK
 ```python
+#Natural Language to SQL Query Assistant
+# Import the NL2SQL class
 from newberryai import NL2SQL
 import json
-
 # Initialize NL2SQL processor
 nl2sql = NL2SQL()
 
-# Set up the database connection parameters
-host = "127.0.0.1"  # or "localhost"
+# Set up the database connection parameters (adjust these accordingly)
+host = "127.0.0.1"
 user = "root"
-password = "your_password"
-database = "your_database"
+password = "passward"
+database = "classicmodels"
 port = 3306
 
 # Connect to the database
@@ -451,53 +641,36 @@ else:
     print(f"Error: {response['message']}")
 ```
 
-The response dictionary contains:
-- `success`: Boolean indicating if the query was successful
-- `message`: Status message or error description
-- `sql_query`: The generated SQL query
-- `data`: Query results as a list of dictionaries
-- `summary`: Statistical summary of the query results
-
-#### CLI
-
+### CLI Usage
 ```sh
-# Run a single query
-newberryai nl2sql --question "Show all tables" --host localhost --user root --password your_password --database your_database
-
-# Start interactive mode
-newberryai nl2sql --interactive
-
-# Launch web interface
-newberryai nl2sql --gradio
+newberryai sql --question "Show all tables"
+newberryai sql --interactive
+newberryai sql --gradio
 ```
-
-#### Environment Variables
-You can set default database connection parameters using environment variables:
-- `DB_HOST`: Database host (default: "localhost")
-- `DB_USER`: Database username
-- `DB_PASSWORD`: Database password
-- `DB_NAME`: Database name
-- `DB_PORT`: Database port (default: 3306)
-
-These will be used as defaults in the Gradio interface and CLI interactive mode.
 
 ---
 
-### 17. Virtual Try-On
+## 17. Virtual Try-On
 
-#### Python SDK
+### Environment Setup
+```bash
+# Fashn API Configuration
+FASHN_API_KEY=your_fashn_api_key
+FASHN_API_URL=https://api.fashn.ai/v1
+```
 
+### Python SDK
 ```python
+# Generate virtual try-on images using AI. Requires Fashn API credentials.
+import base64
+import asyncio
 from newberryai import VirtualTryOn
-
 try_on = VirtualTryOn()
-
 request = await try_on.process(
-    model_image='vishnu.jpg',
+    model_image='model.jpg',
     garment_image='image.png',
     category='tops'
 )
-
 async def tryon_demo():
     job_id = request["job_id"]
     while True:
@@ -509,31 +682,26 @@ async def tryon_demo():
         print('Generated images:')
         for url in status["output"]:
             print(url)
-
 # Run the demo
 await tryon_demo()
 ```
 
-#### CLI
-
+### CLI Usage
 ```sh
-newberryai tryon --model_image model.jpg --garment_image garment.jpg --category tops
+newberryai tryon --model_image model.jpg --garment_image image.png --category tops
 newberryai tryon --interactive
 newberryai tryon --gradio
 ```
-
 ---
-
-## ⚙️ Requirements & Setup
+## ⚙️Requirements
 
 - Python 3.8+
-- AWS credentials (for AWS-powered features)
-- OpenAI API key (for LLM features)
-- Fashn API credentials (for Virtual Try-On)
-- See [docs](#) for environment variable setup.
-
+- AWS Account (for AWS-powered features)
+- OpenAI API key
+- Additional API keys for specific features:
+  - Fashn API credentials (for Virtual Try-On)
+  - Database access (for NL2SQL)
 ---
-
 ## 🛠️ Troubleshooting
 
 - SSL errors:  
@@ -543,13 +711,6 @@ newberryai tryon --gradio
   ```
 
 ---
-
 ## 📄 License
 
 MIT License
-
----
-
-**For more details, see the [full documentation](https://github.com/HolboxAI/newberryai).**
-
-This project is licensed under the MIT License.
