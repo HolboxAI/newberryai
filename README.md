@@ -620,9 +620,9 @@ nl2sql = NL2SQL()
 
 # Set up the database connection parameters (adjust these accordingly)
 host = "127.0.0.1"
-user = "root"
+user = "user-name"
 password = "passward"
-database = "classicmodels"
+database = "your-database-name"
 port = 3306
 
 # Connect to the database
