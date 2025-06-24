@@ -4,19 +4,12 @@ import boto3
 import tempfile
 import shutil
 from typing import List, Dict, Optional
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import gradio as gr
-from .face_recognigation import FaceRecognition, FaceRequest
+from .face_recognigation import FaceRecognition
 
 # Load environment variables
 load_dotenv()
-
-class VideoRequest(BaseModel):
-    """Request model for video processing"""
-    video_path: str = Field(..., description="Path to the video file")
-    max_frames: int = Field(20, description="Maximum number of frames to process")
-    collection_id: Optional[str] = Field(None, description="AWS Rekognition collection ID for face matching")
 
 class FaceDetection:
     """
@@ -35,29 +28,25 @@ class FaceDetection:
     def add_face_to_collection(self, image_path: str, name: str):
         """
         Add a face to the collection using the face recognition module.
-        
         Args:
             image_path (str): Path to the image file
             name (str): Name to associate with the face
-            
         Returns:
-            FaceResponse: Response from adding face to collection
+            dict: Response from adding face to collection
         """
-        request = FaceRequest(image_path=image_path, name=name)
-        return self.face_recognition.add_to_collect(request)
+        return self.face_recognition.add_to_collect(image_path, name)
 
-    def process_video(self, request: VideoRequest) -> List[Dict]:
+    def process_video(self, video_path: str, max_frames: int = 20) -> list:
         """
         Process a video file and detect faces in its frames.
-        
         Args:
-            request (VideoRequest): The video processing request containing video path and parameters
-            
+            video_path (str): Path to the video file
+            max_frames (int): Maximum number of frames to process
         Returns:
             List[Dict]: List of detected faces with timestamps and metadata
         """
-        print(f"Processing video: {request.video_path}")
-        cap = cv2.VideoCapture(request.video_path)
+        print(f"Processing video: {video_path}")
+        cap = cv2.VideoCapture(video_path)
 
         if not cap.isOpened():
             raise Exception("Could not open video file")
@@ -66,8 +55,8 @@ class FaceDetection:
         fps = cap.get(cv2.CAP_PROP_FPS)
         print(f"Total Frames: {total_frames}, FPS: {fps}")
 
-        frame_interval = max(total_frames // request.max_frames, 1)
-        frame_positions = range(0, total_frames, frame_interval)[:request.max_frames]
+        frame_interval = max(total_frames // max_frames, 1)
+        frame_positions = range(0, total_frames, frame_interval)[:max_frames]
 
         frames_dir = tempfile.mkdtemp()
         detected_faces = []
@@ -151,10 +140,10 @@ class FaceDetection:
                 # Clean up temporary file
                 os.remove(temp_path)
                 
-                if response.success:
+                if response["success"]:
                     return f"Success: Face of {name} added to collection!"
                 else:
-                    return f"Error: {response.message}"
+                    return f"Error: {response['message']}"
             except Exception as e:
                 return f"Error: {str(e)}"
 
@@ -165,11 +154,7 @@ class FaceDetection:
             else:
                 # fallback for older Gradio versions
                 video_path = video
-            request = VideoRequest(
-                video_path=video_path,
-                max_frames=max_frames
-            )
-            results = self.process_video(request)
+            results = self.process_video(video_path, max_frames)
             
             # Format results for display
             formatted_results = []
@@ -252,21 +237,15 @@ class FaceDetection:
                     image_path = parts[1]
                     name = parts[2]
                     response = self.add_face_to_collection(image_path, name)
-                    print(response.message)
-                    if response.success:
-                        print(f"Face ID: {response.face_id}")
+                    print(response["message"])
+                    if response["success"]:
+                        print(f"Face ID: {response['face_id']}")
                 
                 elif command == "process":
                     video_path = parts[1]
                     max_frames = int(parts[2]) if len(parts) > 2 else 20
-                    
-                    request = VideoRequest(
-                        video_path=video_path,
-                        max_frames=max_frames
-                    )
-                    
                     print("\nProcessing video...")
-                    results = self.process_video(request)
+                    results = self.process_video(video_path, max_frames)
                     
                     print("\nDetection Results:")
                     for detection in results:
