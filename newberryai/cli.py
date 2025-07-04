@@ -9,6 +9,7 @@ import json
 import base64
 from newberryai.virtual_tryon import VirtualTryOn
 from .agent import Agent
+from newberryai.image_search import ImageSearch
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -524,6 +525,17 @@ def agent_command(args):
     else:
         print("Check the argument via --help")
 
+def image_search_command(args):
+    searcher = ImageSearch(s3_bucket=args.s3_bucket)
+    if args.build_index:
+        searcher.build_index(prefix=args.prefix)
+    elif args.gradio:
+        searcher.start_gradio()
+    elif args.cli:
+        searcher.run_cli()
+    else:
+        print("No action specified. Use --build_index, --gradio, or --cli.")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -727,8 +739,21 @@ def main():
     agent_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive mode')
     agent_parser.add_argument('--query', '-q', type=str, help='Process a single query')
 
+    # Image Search Command
+    image_search_parser = subparsers.add_parser('image_search', help='Image search using S3, CLIP, and FAISS')
+    image_search_parser.add_argument('--s3_bucket', required=True, help='S3 bucket name')
+    image_search_parser.add_argument('--build_index', action='store_true', help='Build index from S3 images')
+    image_search_parser.add_argument('--prefix', default='', help='S3 prefix/folder (optional)')
+    image_search_parser.add_argument('--gradio', action='store_true', help='Launch Gradio UI')
+    image_search_parser.add_argument('--cli', action='store_true', help='Run CLI')
+    image_search_parser.set_defaults(func=image_search_command)
+
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
-    args.func(args)
+    if hasattr(args, 'func'):
+        args.func(args)
+    else:
+        parser.print_help()
+
 if __name__ == '__main__':
     main()

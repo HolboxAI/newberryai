@@ -721,6 +721,45 @@ newberryai speech_to_speech
 
 ---
 
+## 19. Image Search (CLIP + FAISS + S3)
+
+### Environment Setup
+```bash
+# AWS Credentials
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+from newberryai import ImageSearch
+
+# Initialize with your S3 bucket name
+searcher = ImageSearch(s3_bucket='your-bucket-name')
+
+# Build the index (run once, or when new images are added)
+searcher.build_index(prefix='optional/folder/')
+
+# Search for images by text
+results = searcher.search('I want a red jacket', k=5)
+for r in results:
+    print(r['image_url'], r['folder'], r['distance'])
+```
+
+### CLI Usage
+```sh
+newberryai image_search --s3_bucket your-bucket-name --build_index --prefix optional/folder/
+newberryai image_search --s3_bucket your-bucket-name --cli
+```
+
+### Gradio UI
+```sh
+newberryai image_search --s3_bucket your-bucket-name --gradio
+```
+
+---
+
 ## ⚙️Requirements
 
 - Python 3.8+
