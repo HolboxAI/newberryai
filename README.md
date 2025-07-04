@@ -723,12 +723,16 @@ newberryai speech_to_speech
 
 ## 19. Image Search (CLIP + FAISS + S3)
 
+### Description
+Search your S3 image collection using natural language queries. Images are embedded using CLIP, indexed with FAISS, and stored in S3. Supports both CLI and Python SDK usage.
+
 ### Environment Setup
 ```bash
 # AWS Credentials
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_DEFAULT_REGION=us-east-1
+image_search_S3_bucketname=your_s3_bucket_name 
 ```
 
 ### Python SDK
@@ -739,7 +743,8 @@ from newberryai import ImageSearch
 searcher = ImageSearch(s3_bucket='your-bucket-name')
 
 # Build the index (run once, or when new images are added)
-searcher.build_index(prefix='optional/folder/')
+searcher.build_index
+#searcher.build_index(prefix='optional/folder/')
 
 # Search for images by text
 results = searcher.search('I want a red jacket', k=5)
@@ -749,14 +754,19 @@ for r in results:
 
 ### CLI Usage
 ```sh
+# Build the index (run once, or when new images are added)
 newberryai image_search --s3_bucket your-bucket-name --build_index --prefix optional/folder/
-newberryai image_search --s3_bucket your-bucket-name --cli
-```
 
-### Gradio UI
-```sh
+# Search via CLI (get image URLs in terminal)
+newberryai image_search --s3_bucket your-bucket-name --cli
+
+# Launch Gradio UI for interactive search
 newberryai image_search --s3_bucket your-bucket-name --gradio
 ```
+
+### Notes
+- If your S3 images are private, the URLs may not be viewable in a browser unless you use presigned URLs or make the images public.
+- To download images, copy the URLs from the CLI output and use your browser or a tool like `wget` or `curl`.
 
 ---
 
