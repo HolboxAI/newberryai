@@ -1,6 +1,5 @@
 from typing import Any, Callable, Dict, List, get_type_hints
 import json
-import inspect
 from newberryai.health_chat import HealthChat
 from newberryai.function_registry import FunctionRegistry
 import gradio as gr
@@ -10,9 +9,9 @@ class Agent:
         self.assistant = HealthChat(system_prompt=system_prompt)
         self.registry = FunctionRegistry()
         
-    def register_function(self, func: Callable):
+    def register_function(self, func: Callable, category: str = "general"):
         """Register a function that the agent can call"""
-        self.registry.register(func)
+        self.registry.register(func, category=category)
     
     def _create_function_prompt(self, query: str) -> str:
         functions_json = json.dumps(self.registry.descriptions, indent=2)
@@ -62,13 +61,13 @@ class Agent:
         except json.JSONDecodeError:
             raise ValueError(f"Invalid JSON response: {response[:100]}...")
     
-    def process_query(self, query: str) -> Any:
+    def process_query(self, query: str, **kwargs) -> Any:
         """Process a natural language query and route it to appropriate function"""
         if not self.registry.functions:
             raise ValueError("No functions registered with the agent")
             
         prompt = self._create_function_prompt(query)
-        response = self.assistant.ask(question=prompt)
+        response = self.assistant.ask(question=prompt, **kwargs)
         
         try:
             cleaned_response = self._clean_json_response(response)

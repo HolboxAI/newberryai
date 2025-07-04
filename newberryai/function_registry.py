@@ -24,14 +24,14 @@ class FunctionRegistry:
 
         # Dictionary of all base functions
         BASE_FUNCTIONS = {
-            'get_weather': get_weather,
-            'calculate_distance': calculate_distance,
-            'translate_text': translate_text,
-            'search_web': search_web
+            'get_weather': {"func": get_weather, "category": "utility"},
+            'calculate_distance': {"func": calculate_distance, "category": "utility"},
+            'translate_text': {"func": translate_text, "category": "language"},
+            'search_web': {"func": search_web, "category": "search"}
         }
 
         for func in BASE_FUNCTIONS.values():
-            self.register(func)
+            self.register(func["func"], category = func["category"])
     
     def _extract_function_metadata(self, func: Callable) -> Dict[str, Any]:
         """Extract function metadata using introspection"""
@@ -66,9 +66,10 @@ class FunctionRegistry:
             "full_docstring": doc
         }
     
-    def register(self, func: Callable):
+    def register(self, func: Callable, category: str = "general"):
         """Register a function with automatically extracted metadata"""
         metadata = self._extract_function_metadata(func)
+        metadata["category"] = category
         self.functions[metadata["name"]] = func
         self.descriptions[metadata["name"]] = metadata
     

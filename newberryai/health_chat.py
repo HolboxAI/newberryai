@@ -16,9 +16,16 @@ class HealthChat:
     def __init__(
         self,
         system_prompt: str = "",
-        max_tokens: int = 1000
-
+        max_tokens: int = 1000,
+        model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"
     ):
+        """
+        Initialize HealthChat.
+        Args:
+            system_prompt (str): System prompt for the LLM.
+            max_tokens (int): Max tokens for the LLM response.
+            model_id (str): Bedrock model ID to use (default: Claude 3.5 Sonnet).
+        """
         session = boto3.Session()
         credentials = session.get_credentials()
         if credentials is None:
@@ -35,6 +42,7 @@ class HealthChat:
         )
         self.max_tokens = max_tokens
         self.system_prompt = system_prompt
+        self.model_id = model_id
         
         if not self.aws_access_key_id or not self.aws_secret_access_key:
             raise ValueError("AWS credentials not found. Please provide them or set environment variables.")
@@ -274,7 +282,7 @@ class HealthChat:
 
         try:
             response = self.runtime.invoke_model(
-                modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+                modelId=self.model_id,
                 contentType='application/json',
                 body=body,
             )
