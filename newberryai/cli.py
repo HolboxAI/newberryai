@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text)
 import asyncio
 from pathlib import Path
 import json
@@ -524,6 +524,24 @@ def agent_command(args):
     else:
         print("Check the argument via --help")
 
+def handwrite2text_command(args):
+    handwriter = Handwrite2Text()
+    if args.gradio:
+        print("Launching Gradio interface for Handwriting to Text Converter")
+        handwriter.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Handwriting to Text Converter")
+        handwriter.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Image file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Extracting text from: {args.file_path}")
+        response = handwriter.extract_text(args.file_path)
+        print("\nExtracted Text:")
+        print(response)
+    else:
+        print("Check the argument via --help")
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -726,6 +744,12 @@ def main():
     agent_parser.add_argument('--gradio', '-g', action='store_true', help='Launch Gradio interface')
     agent_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive mode')
     agent_parser.add_argument('--query', '-q', type=str, help='Process a single query')
+    # Handwrite2Text Command
+    handwrite2text_parser = subparsers.add_parser('handwrite2text', help='Convert handwritten document images to digital text')
+    handwrite2text_parser.add_argument('--file_path', '-f', type=str, help='Path to the handwritten image file')
+    handwrite2text_parser.add_argument('--gradio', '-g', action='store_true', help='Launch Gradio interface')
+    handwrite2text_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive CLI mode')
+    handwrite2text_parser.set_defaults(func=handwrite2text_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
