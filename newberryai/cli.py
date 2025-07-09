@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text)
 import asyncio
 from pathlib import Path
 import json
@@ -525,17 +525,24 @@ def agent_command(args):
     else:
         print("Check the argument via --help")
 
-def image_search_command(args):
-    searcher = ImageSearch(s3_bucket=args.s3_bucket)
-    if args.build_index:
-        searcher.build_index(prefix=args.prefix)
-    elif args.gradio:
-        searcher.start_gradio()
-    elif args.cli:
-        searcher.run_cli()
+def handwrite2text_command(args):
+    handwriter = Handwrite2Text()
+    if args.gradio:
+        print("Launching Gradio interface for Handwriting to Text Converter")
+        handwriter.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Handwriting to Text Converter")
+        handwriter.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Image file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Extracting text from: {args.file_path}")
+        response = handwriter.extract_text(args.file_path)
+        print("\nExtracted Text:")
+        print(response)
     else:
-        print("No action specified. Use --build_index, --gradio, or --cli.")
-
+        print("Check the argument via --help")
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -738,15 +745,12 @@ def main():
     agent_parser.add_argument('--gradio', '-g', action='store_true', help='Launch Gradio interface')
     agent_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive mode')
     agent_parser.add_argument('--query', '-q', type=str, help='Process a single query')
-
-    # Image Search Command
-    image_search_parser = subparsers.add_parser('image_search', help='Image search using S3, CLIP, and FAISS')
-    image_search_parser.add_argument('--s3_bucket', required=True, help='S3 bucket name')
-    image_search_parser.add_argument('--build_index', action='store_true', help='Build index from S3 images')
-    image_search_parser.add_argument('--prefix', default='', help='S3 prefix/folder (optional)')
-    image_search_parser.add_argument('--gradio', action='store_true', help='Launch Gradio UI')
-    image_search_parser.add_argument('--cli', action='store_true', help='Run CLI')
-    image_search_parser.set_defaults(func=image_search_command)
+    # Handwrite2Text Command
+    handwrite2text_parser = subparsers.add_parser('handwrite2text', help='Convert handwritten document images to digital text')
+    handwrite2text_parser.add_argument('--file_path', '-f', type=str, help='Path to the handwritten image file')
+    handwrite2text_parser.add_argument('--gradio', '-g', action='store_true', help='Launch Gradio interface')
+    handwrite2text_parser.add_argument('--interactive', '-i', action='store_true', help='Run in interactive CLI mode')
+    handwrite2text_parser.set_defaults(func=handwrite2text_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
