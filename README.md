@@ -53,6 +53,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 📄 Document Processing
 - **PDF Summarizer**: Intelligent document summarization
 - **PDF Extractor**: Semantic search and content extraction
+- **Handwriting to Text Converter**: Extract handwritten text from images using AI
 
 ### 🎨 Media Generation
 - **Video Generator**: Text-to-video with Amazon Bedrock Nova
@@ -717,6 +718,40 @@ app.run()
 ### CLI Usage
 ```sh
 newberryai speech_to_speech
+```
+
+---
+
+## 19. Handwriting to Text Converter
+
+### Environment Setup
+```bash
+# OpenAI Configuration 
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### Python SDK
+```python
+# Extract handwritten text from an image using AI.
+from newberryai import Handwrite2Text
+
+# Initialize the handwriting-to-text converter
+handwriter = Handwrite2Text()
+
+# Path to your handwritten document image
+image_path = 'handwritten_note.jpg'
+
+# Extract handwritten text from the image
+extracted_text = handwriter.extract_text(image_path)
+
+print("Extracted Handwritten Text:")
+print(extracted_text)
+```
+
+### CLI Usage
+```sh
+newberryai handwritten2text --file_path handwritten_note.jpg
+newberryai handwritten2text --gradio
 ```
 
 ---
