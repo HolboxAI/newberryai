@@ -1,3 +1,4 @@
+
 # NewberryAI 
 
 **The complete AI toolkit that turns complex workflows into simple Python commands. From medical diagnosis to compliance checking, document analysis to face recognition - NewberryAI brings enterprise-grade AI capabilities to your fingertips.**
@@ -63,6 +64,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 🔍 Computer Vision
 - **Face Recognition**: Identity management with AWS Rekognition
 - **Face Detection**: Video face detection and tracking
+- **Image Search (S3 + TwelveLabs)**: Semantic image search over your S3 bucket using TwelveLabs AI
 
 ### 💻 Development Tools
 - **Coding Assistant**: Code review and debugging support
@@ -753,6 +755,61 @@ print(extracted_text)
 newberryai handwritten2text --file_path handwritten_note.jpg
 newberryai handwritten2text --gradio
 ```
+
+---
+
+## 20. Image Search (S3 + TwelveLabs)
+
+### Environment Setup
+```bash
+# AWS Credentials (for S3 access)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+# TwelveLabs API Key
+TWELVE_LABS_API_KEY=your_twelvelabs_api_key
+```
+
+### How it works
+- Upload your images to your S3 bucket (using AWS Console, CLI, or script).
+- Build the index using the CLI or Python API (this registers your images with TwelveLabs).
+- Search images using natural language via CLI, Gradio, or Python API.
+
+### Python SDK
+```python
+from newberryai import ImageSearch
+
+# Initialize with your S3 bucket name
+searcher = ImageSearch(s3_bucket='your-bucket-name')
+
+# Build the index (register images with TwelveLabs)
+searcher.build_index(prefix='optional/folder/')
+
+# Search for images
+results = searcher.search('A cat sitting on a sofa', k=5)
+for r in results:
+    print(r['s3_url'], r['score'], r['folder'])
+
+# Launch Gradio UI
+searcher.start_gradio()
+
+# Launch CLI
+searcher.run_cli()
+```
+
+### CLI Usage
+```sh
+# Build the index (register images)
+newberryai image_search --s3_bucket your-bucket-name --build_index
+
+# Search via CLI
+newberryai image_search --s3_bucket your-bucket-name --cli
+
+# Launch Gradio UI
+newberryai image_search --s3_bucket your-bucket-name --gradio
+```
+
+**Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
 
 ---
 

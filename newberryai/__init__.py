@@ -20,3 +20,4 @@ from .virtual_tryon import VirtualTryOn
 from .agent import Agent
 from .function_registry import FunctionRegistry
 from .handwritten2text import Handwrite2Text
+from .image_search import ImageSearch

@@ -17,7 +17,6 @@ matplotlib
 seaborn
 python-dotenv
 mysql-connector-python
-faiss-cpu
-transformers
-torch
 Pillow
+twelvelabs
+scikit-learn
