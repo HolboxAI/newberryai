@@ -11,31 +11,6 @@ import numpy as np
 # Load environment variables
 load_dotenv()
 
-def extract_color_from_query(query):
-    colors = ["red", "blue", "green", "yellow", "black", "white", "orange", "purple", "pink", "brown", "gray"]
-    for color in colors:
-        if color in query.lower():
-            return color
-    return None
-
-def is_mostly_color(image, color, threshold=0.4):  # Try 0.4 or 0.5
-    arr = np.array(image)
-    if color == "red":
-        mask = (arr[:,:,0] > 150) & (arr[:,:,1] < 100) & (arr[:,:,2] < 100)
-    elif color == "blue":
-        mask = (arr[:,:,2] > 150) & (arr[:,:,0] < 100) & (arr[:,:,1] < 100)
-    elif color == "green":
-        mask = (arr[:,:,1] > 150) & (arr[:,:,0] < 100) & (arr[:,:,2] < 100)
-    elif color == "black":
-        mask = (arr.mean(axis=2) < 50)
-    elif color == "white":
-        mask = (arr.mean(axis=2) > 200)
-    # Add more colors as needed
-    else:
-        return True  # If color not handled, don't filter
-    ratio = np.sum(mask) / (arr.shape[0] * arr.shape[1])
-    return ratio > threshold
-
 # --- S3 Utilities ---
 class S3Utils:
     def __init__(self):
@@ -125,7 +100,6 @@ class ImageSearch:
             query_text=text_query,
             options=options
         )
-        color = extract_color_from_query(text_query)
         filtered = []
         count = 0
         for clip in results.data:
@@ -136,14 +110,6 @@ class ImageSearch:
                     if img['s3_url'] == s3_url:
                         folder_name = img['folder_name']
                         break
-            # Color filtering
-            if color and s3_url:
-                try:
-                    pil_img = self.s3_utils.load_image_from_s3_path(s3_url.replace("https://", "s3://").replace(".s3.amazonaws.com/", "/"))
-                    if not is_mostly_color(pil_img, color, threshold=0.4):
-                        continue
-                except Exception as e:
-                    pass  # If image can't be loaded, skip color filtering
             if folder is None or (folder_name and folder_name.lower() == folder.lower()):
                 filtered.append({
                     "score": getattr(clip, 'score', None),
