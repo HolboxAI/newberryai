@@ -13,9 +13,6 @@
   <a href="https://github.com/HolboxAI/newberryai/stargazers">
     <img src="https://img.shields.io/github/stars/HolboxAI/newberryai?style=flat-square" alt="GitHub stars">
   </a>
-  <a href="https://github.com/HolboxAI/newberryai/issues">
-    <img src="https://img.shields.io/github/issues-raw/HolboxAI/newberryai?style=flat-square" alt="Open Issues">
-  </a>
 </p>
 
 
