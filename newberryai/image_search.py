@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import gradio as gr
 from twelvelabs import TwelveLabs
 import numpy as np
-from sklearn.cluster import KMeans
 
 # Load environment variables
 load_dotenv()
@@ -36,39 +35,6 @@ def is_mostly_color(image, color, threshold=0.4):  # Try 0.4 or 0.5
         return True  # If color not handled, don't filter
     ratio = np.sum(mask) / (arr.shape[0] * arr.shape[1])
     return ratio > threshold
-
-def get_dominant_color(image, k=3):
-    arr = np.array(image)
-    arr = arr.reshape((-1, 3))
-    kmeans = KMeans(n_clusters=k, n_init=1)
-    kmeans.fit(arr)
-    colors = kmeans.cluster_centers_
-    counts = np.bincount(kmeans.labels_)
-    dominant = colors[counts.argmax()]
-    return dominant
-
-def color_name_to_rgb(color):
-    # Add more as needed
-    color_dict = {
-        "red": (255, 0, 0),
-        "blue": (0, 0, 255),
-        "green": (0, 128, 0),
-        "yellow": (255, 255, 0),
-        "black": (0, 0, 0),
-        "white": (255, 255, 255),
-        "orange": (255, 165, 0),
-        "purple": (128, 0, 128),
-        "pink": (255, 192, 203),
-        "brown": (150, 75, 0),
-        "gray": (128, 128, 128)
-    }
-    return color_dict.get(color, (0, 0, 0))
-
-def is_dominant_color(image, color, threshold=100):
-    dominant = get_dominant_color(image)
-    target = color_name_to_rgb(color)
-    dist = np.linalg.norm(np.array(dominant) - np.array(target))
-    return dist < threshold
 
 # --- S3 Utilities ---
 class S3Utils:
@@ -174,7 +140,7 @@ class ImageSearch:
             if color and s3_url:
                 try:
                     pil_img = self.s3_utils.load_image_from_s3_path(s3_url.replace("https://", "s3://").replace(".s3.amazonaws.com/", "/"))
-                    if not is_dominant_color(pil_img, color, threshold=100):  # You can try 80, 100, or 120 for threshold
+                    if not is_mostly_color(pil_img, color, threshold=0.4):
                         continue
                 except Exception as e:
                     pass  # If image can't be loaded, skip color filtering
