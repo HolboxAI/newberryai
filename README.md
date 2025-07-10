@@ -1,6 +1,9 @@
 # 🫐📦 **NewberryAI**
 
 <p>
+  <a href="https://github.com/HolboxAI/newberryai">
+    <img src="https://img.shields.io/badge/GitHub-HolboxAI%2Fnewberryai-blue?logo=github&style=flat-square" alt="GitHub Repo">
+  </a>
   <a href="https://pypi.org/project/newberryai/">
     <img src="https://img.shields.io/pypi/v/newberryai?style=flat-square" alt="PyPI">
   </a>
