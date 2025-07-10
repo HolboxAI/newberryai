@@ -1,3 +1,23 @@
+# 🫐📦 **NewberryAI**
+
+<p>
+  <a href="https://pypi.org/project/newberryai/">
+    <img src="https://img.shields.io/pypi/v/newberryai?style=flat-square" alt="PyPI">
+  </a>
+  <a href="https://pypistats.org/packages/newberryai">
+    <img src="https://img.shields.io/pypi/dm/newberryai?style=flat-square" alt="PyPI - Downloads">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/pypi/l/newberryai?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/HolboxAI/newberryai/stargazers">
+    <img src="https://img.shields.io/github/stars/HolboxAI/newberryai?style=flat-square" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/HolboxAI/newberryai/issues">
+    <img src="https://img.shields.io/github/issues-raw/HolboxAI/newberryai?style=flat-square" alt="Open Issues">
+  </a>
+</p>
+
 
 # NewberryAI 
 
