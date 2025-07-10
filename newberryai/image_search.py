@@ -166,23 +166,3 @@ class ImageSearch:
                     print(f"{r['s3_url']} (score: {r['score']}, folder: {r['folder']})")
             except Exception as e:
                 print(f"Error: {str(e)}")
-
-# --- CLI/Gradio Entrypoint ---
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Image Search System (S3 + TwelveLabs)")
-    parser.add_argument('--s3_bucket', required=True, help='S3 bucket name')
-    parser.add_argument('--build_index', action='store_true', help='Build index from S3 images')
-    parser.add_argument('--prefix', default='', help='S3 prefix/folder (optional)')
-    parser.add_argument('--gradio', action='store_true', help='Launch Gradio UI')
-    parser.add_argument('--cli', action='store_true', help='Run CLI')
-    args = parser.parse_args()
-    searcher = ImageSearch(s3_bucket=args.s3_bucket)
-    if args.build_index:
-        searcher.build_index(prefix=args.prefix)
-    elif args.gradio:
-        searcher.start_gradio()
-    elif args.cli:
-        searcher.run_cli()
-    else:
-        print("No action specified. Use --build_index, --gradio, or --cli.")

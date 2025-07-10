@@ -778,7 +778,7 @@ newberryai handwritten2text --gradio
 
 ---
 
-## 20. Image Search (S3 + TwelveLabs)
+## 20. Image Search 
 
 ### Environment Setup
 ```bash
