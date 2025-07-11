@@ -18,4 +18,6 @@ seaborn
 python-dotenv
 mysql-connector-python
 Pillow
-twelvelabs
+faiss-cpu
+transformers
+torch

@@ -764,7 +764,7 @@ def main():
     handwrite2text_parser.set_defaults(func=handwrite2text_command)
 
     # Image Search Command
-    image_search_parser = subparsers.add_parser('image_search', help='Semantic image search using S3 and TwelveLabs')
+    image_search_parser = subparsers.add_parser('image_search', help='Semantic image search using S3, CLIP and FAISS')
     image_search_parser.add_argument('--s3_bucket', required=True, help='S3 bucket name')
     image_search_parser.add_argument('--build_index', action='store_true', help='Build index from S3 images')
     image_search_parser.add_argument('--prefix', default='', help='S3 prefix/folder (optional)')

@@ -84,7 +84,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 🔍 Computer Vision
 - **Face Recognition**: Identity management with AWS Rekognition
 - **Face Detection**: Video face detection and tracking
-- **Image Search (S3 + TwelveLabs)**: Semantic image search over your S3 bucket using TwelveLabs AI
+- **Image Search**: Semantic image search over your S3 bucket using CLIP and FAISS
 
 ### 💻 Development Tools
 - **Coding Assistant**: Code review and debugging support
@@ -786,13 +786,11 @@ newberryai handwritten2text --gradio
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_DEFAULT_REGION=us-east-1
-# TwelveLabs API Key
-TWELVE_LABS_API_KEY=your_twelvelabs_api_key
 ```
 
 ### How it works
 - Upload your images to your S3 bucket (using AWS Console, CLI, or script).
-- Build the index using the CLI or Python API (this registers your images with TwelveLabs).
+- Build the index using the CLI or Python API (this creates a local FAISS index from your S3 images).
 - Search images using natural language via CLI, Gradio, or Python API.
 
 ### Python SDK
@@ -802,13 +800,13 @@ from newberryai import ImageSearch
 # Initialize with your S3 bucket name
 searcher = ImageSearch(s3_bucket='your-bucket-name')
 
-# Build the index (register images with TwelveLabs)
+# Build the index (create FAISS index from S3 images)
 searcher.build_index(prefix='optional/folder/')
 
 # Search for images
 results = searcher.search('A cat sitting on a sofa', k=5)
 for r in results:
-    print(r['s3_url'], r['score'], r['folder'])
+    print(r['image_url'], r['distance'], r['folder'])
 
 # Launch Gradio UI
 searcher.start_gradio()
@@ -819,7 +817,7 @@ searcher.run_cli()
 
 ### CLI Usage
 ```sh
-# Build the index (register images)
+# Build the index from your S3 images
 newberryai image_search --s3_bucket your-bucket-name --build_index
 
 # Search via CLI
@@ -830,27 +828,3 @@ newberryai image_search --s3_bucket your-bucket-name --gradio
 ```
 
 **Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
-
----
-
-## ⚙️Requirements
-
-- Python 3.8+
-- AWS Account (for AWS-powered features)
-- OpenAI API key
-- Additional API keys for specific features:
-  - Fashn API credentials (for Virtual Try-On)
-  - Database access (for NL2SQL)
----
-## 🛠️ Troubleshooting
-
-- SSL errors:  
-  ```sh
-  pip install --upgrade certifi
-  export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
-  ```
-
----
-## 📄 License
-
-MIT License
