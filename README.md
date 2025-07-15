@@ -748,8 +748,10 @@ newberryai speech_to_speech
 
 ### Environment Setup
 ```bash
-# OpenAI Configuration 
-OPENAI_API_KEY=your_openai_api_key
+# AWS Credentials (for S3 access or AWS-powered features)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
 ```
 
 ### Python SDK
