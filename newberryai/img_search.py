@@ -3,11 +3,10 @@ import json
 import boto3
 import faiss
 import numpy as np
-import torch
+import base64
 from pathlib import Path
 from PIL import Image
 from dotenv import load_dotenv
-from transformers import CLIPProcessor, CLIPModel
 import gradio as gr
 
 # Load environment variables
@@ -55,12 +54,18 @@ class S3Utils:
         else:
             return self.s3.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': key}, ExpiresIn=expires_in)
 
-# --- Embedder (CLIP) ---
+# --- Embedder (Amazon Titan Multimodal Embeddings G1) ---
 class Embedder:
-    def __init__(self, device=None):
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(self.device)
-        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    def __init__(self, embedding_length=1024, region_name=None):
+        self.bedrock = boto3.client('bedrock-runtime', region_name=region_name)
+        self.model_id = "amazon.titan-embed-image-v1"
+        self.embedding_length = embedding_length
+
+    def _encode_image_to_base64(self, image: Image.Image):
+        from io import BytesIO
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
     def get_image_embeddings(self, image_info_list, s3_utils):
         embeddings = []
@@ -69,10 +74,20 @@ class Embedder:
             s3_path = img_info['s3_path']
             try:
                 image = s3_utils.load_image_from_s3_path(s3_path)
-                inputs = self.processor(images=image, return_tensors="pt").to(self.device)
-                with torch.no_grad():
-                    image_features = self.model.get_image_features(**inputs)
-                embeddings.append(image_features.cpu().numpy())
+                image_string = self._encode_image_to_base64(image)
+                body = json.dumps({
+                    "inputImage": image_string,
+                    "embeddingConfig": {"outputEmbeddingLength": self.embedding_length}
+                })
+                response = self.bedrock.invoke_model(
+                    modelId=self.model_id,
+                    body=body,
+                    accept="application/json",
+                    contentType="application/json"
+                )
+                response_body = json.loads(response['body'].read())
+                embedding = np.array(response_body['embedding']).reshape(1, -1)
+                embeddings.append(embedding)
                 processed_image_info.append(img_info)
             except Exception as e:
                 print(f"Error processing image {s3_path}: {e}. Skipping.")
@@ -82,10 +97,33 @@ class Embedder:
         return np.vstack(embeddings), processed_image_info
 
     def get_text_embedding(self, text_query):
-        inputs = self.processor(text=text_query, return_tensors="pt", padding=True, truncation=True).to(self.device)
-        with torch.no_grad():
-            text_features = self.model.get_text_features(**inputs)
-        return text_features.cpu().numpy()
+        body = json.dumps({
+            "inputText": text_query,
+            "embeddingConfig": {"outputEmbeddingLength": self.embedding_length}
+        })
+        response = self.bedrock.invoke_model(
+            modelId=self.model_id,
+            body=body,
+            accept="application/json",
+            contentType="application/json"
+        )
+        response_body = json.loads(response['body'].read())
+        return np.array(response_body['embedding']).reshape(1, -1)
+
+    def get_image_embedding_from_pil(self, image):
+        image_string = self._encode_image_to_base64(image)
+        body = json.dumps({
+            "inputImage": image_string,
+            "embeddingConfig": {"outputEmbeddingLength": self.embedding_length}
+        })
+        response = self.bedrock.invoke_model(
+            modelId=self.model_id,
+            body=body,
+            accept="application/json",
+            contentType="application/json"
+        )
+        response_body = json.loads(response['body'].read())
+        return np.array(response_body['embedding']).reshape(1, -1)
 
 # --- VectorStore (FAISS) ---
 class VectorStore:
@@ -138,12 +176,12 @@ class VectorStore:
 
 # --- Main ImageSearch Class ---
 class ImageSearch:
-    def __init__(self, s3_bucket, index_file="faiss.index", metadata_file="metadata.json"):
+    def __init__(self, s3_bucket, index_file="faiss.index", metadata_file="metadata.json", embedding_length=1024, region_name=None):
         self.s3_bucket = s3_bucket
         self.index_file = index_file
         self.metadata_file = metadata_file
         self.s3_utils = S3Utils()
-        self.embedder = Embedder()
+        self.embedder = Embedder(embedding_length=embedding_length, region_name=region_name)
         self.vectorstore = VectorStore()
         self.index_loaded = False
 
@@ -173,6 +211,21 @@ class ImageSearch:
             for distance, s3_path, folder_name in results
         ]
 
+    def search_by_image(self, image, k=5, folder=None):
+        if not self.index_loaded:
+            self.load_index()
+        query_embedding = self.embedder.get_image_embedding_from_pil(image)
+        results = self.vectorstore.search_images(query_embedding, k=k, filter_folder=folder)
+        return [
+            {
+                "distance": float(distance),
+                "s3_path": s3_path,
+                "folder": folder_name,
+                "image_url": self.s3_utils.get_image_url_from_s3_path(s3_path)
+            }
+            for distance, s3_path, folder_name in results
+        ]
+
     def get_folders(self):
         if not self.index_loaded:
             self.load_index()
@@ -180,40 +233,77 @@ class ImageSearch:
 
     # --- Gradio UI ---
     def start_gradio(self):
-        def search_interface(text_query, k, folder):
+        def text_search_interface(text_query, k, folder):
             results = self.search(text_query, k=k, folder=folder if folder != "All" else None)
             return [r["image_url"] for r in results]
+        def image_search_interface(image, k, folder):
+            if image is None:
+                return []
+            pil_image = image if isinstance(image, Image.Image) else Image.open(image)
+            results = self.search_by_image(pil_image, k=k, folder=folder if folder != "All" else None)
+            return [r["image_url"] for r in results]
         folder_choices = ["All"] + self.get_folders()
-        interface = gr.Interface(
-            fn=search_interface,
+        text_tab = gr.Interface(
+            fn=text_search_interface,
             inputs=[
                 gr.Textbox(label="Text Query", placeholder="Describe the image you want..."),
                 gr.Slider(minimum=1, maximum=10, value=5, step=1, label="Top K Results"),
                 gr.Dropdown(choices=folder_choices, value="All", label="Folder (optional)")
             ],
             outputs=gr.Gallery(label="Search Results"),
-            title="Image Search (CLIP+FAISS+S3)",
-            description="Search your S3 image collection using natural language."
+            title="Text to Image Search"
         )
-        return interface.launch(share=True)
+        image_tab = gr.Interface(
+            fn=image_search_interface,
+            inputs=[
+                gr.Image(type="pil", label="Query Image"),
+                gr.Slider(minimum=1, maximum=10, value=5, step=1, label="Top K Results"),
+                gr.Dropdown(choices=folder_choices, value="All", label="Folder (optional)")
+            ],
+            outputs=gr.Gallery(label="Search Results"),
+            title="Image to Image Search"
+        )
+        tabs = gr.TabbedInterface([text_tab, image_tab], tab_names=["Text to Image", "Image to Image"])
+        return tabs.launch(share=True)
 
     # --- CLI ---
     def run_cli(self):
         print("Image Search CLI initialized.")
         print("Type 'exit' or 'quit' to end.")
         while True:
-            text = input("\nEnter your search query: ")
-            if text.lower() in ["exit", "quit"]:
+            mode = input("\nChoose search mode: (1) Text, (2) Image, (exit/quit): ").strip().lower()
+            if mode in ["exit", "quit"]:
                 print("Goodbye!")
                 break
-            k = input("How many results? (default 5): ")
-            k = int(k) if k.strip().isdigit() else 5
-            folder = input("Filter by folder (leave blank for all): ")
-            folder = folder.strip() or None
-            try:
-                results = self.search(text, k=k, folder=folder)
-                print("\nResults:")
-                for r in results:
-                    print(f"{r['image_url']} (distance: {r['distance']:.4f}, folder: {r['folder']})")
-            except Exception as e:
-                print(f"Error: {str(e)}")
+            if mode == "1" or mode.startswith("text"):
+                text = input("Enter your search query: ")
+                k = input("How many results? (default 5): ")
+                k = int(k) if k.strip().isdigit() else 5
+                folder = input("Filter by folder (leave blank for all): ")
+                folder = folder.strip() or None
+                try:
+                    results = self.search(text, k=k, folder=folder)
+                    print("\nResults:")
+                    for r in results:
+                        print(f"{r['image_url']} (distance: {r['distance']:.4f}, folder: {r['folder']})")
+                except Exception as e:
+                    print(f"Error: {str(e)}")
+            elif mode == "2" or mode.startswith("image"):
+                image_path = input("Enter path to query image: ").strip()
+                if not os.path.exists(image_path):
+                    print(f"File not found: {image_path}")
+                    continue
+                try:
+                    pil_image = Image.open(image_path).convert("RGB")
+                    k = input("How many results? (default 5): ")
+                    k = int(k) if k.strip().isdigit() else 5
+                    folder = input("Filter by folder (leave blank for all): ")
+                    folder = folder.strip() or None
+                    results = self.search_by_image(pil_image, k=k, folder=folder)
+                    print("\nResults:")
+                    for r in results:
+                        print(f"{r['image_url']} (distance: {r['distance']:.4f}, folder: {r['folder']})")
+                except Exception as e:
+                    print(f"Error: {str(e)}")
+            else:
+                print("Invalid mode. Please enter 1 for Text, 2 for Image, or exit/quit.")

@@ -84,7 +84,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 🔍 Computer Vision
 - **Face Recognition**: Identity management with AWS Rekognition
 - **Face Detection**: Video face detection and tracking
-- **Image Search**: Semantic image search over your S3 bucket using CLIP and FAISS
+
 
 ### 💻 Development Tools
 - **Coding Assistant**: Code review and debugging support
@@ -790,12 +790,13 @@ AWS_DEFAULT_REGION=us-east-1
 
 ### How it works
 - Upload your images to your S3 bucket (using AWS Console, CLI, or script).
-- Build the index using the CLI or Python API (this creates a local FAISS index from your S3 images).
-- Search images using natural language via CLI, Gradio, or Python API.
+- Build the index using the CLI or Python API (this creates a local FAISS index from your S3 images, using Amazon Titan Multimodal Embeddings G1 for all embeddings).
+- Search images using natural language (text-to-image, powered by Titan text embeddings) or by image (image-to-image, powered by Titan image embeddings) via CLI, Gradio, or Python API.
 
 ### Python SDK
 ```python
 from newberryai import ImageSearch
+from PIL import Image
 
 # Initialize with your S3 bucket name
 searcher = ImageSearch(s3_bucket='your-bucket-name')
@@ -803,28 +804,28 @@ searcher = ImageSearch(s3_bucket='your-bucket-name')
 # Build the index (create FAISS index from S3 images)
 searcher.build_index(prefix='optional/folder/')
 
-# Search for images
+# Search for images by text
 results = searcher.search('A cat sitting on a sofa', k=5)
 for r in results:
     print(r['image_url'], r['distance'], r['folder'])
 
-# Launch Gradio UI
-searcher.start_gradio()
-
-# Launch CLI
-searcher.run_cli()
+# Search for images by image
+query_image = Image.open('query.jpg')
+results = searcher.search_by_image(query_image, k=5)
+for r in results:
+    print(r['image_url'], r['distance'], r['folder'])
 ```
 
 ### CLI Usage
 ```sh
 # Build the index from your S3 images
-newberryai image_search --s3_bucket your-bucket-name --build_index
+newberryai img_search --s3_bucket your-bucket-name --build_index
 
-# Search via CLI
-newberryai image_search --s3_bucket your-bucket-name --cli
+# Search via CLI (choose text or image search at prompt)
+newberryai img_search --s3_bucket your-bucket-name --cli
 
-# Launch Gradio UI
-newberryai image_search --s3_bucket your-bucket-name --gradio
+# Launch Gradio UI (text and image search, with tabs)
+newberryai img_search --s3_bucket your-bucket-name --gradio
 ```
 
 **Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
