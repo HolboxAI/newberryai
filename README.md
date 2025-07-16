@@ -1,3 +1,24 @@
+# 🫐📦 **NewberryAI**
+
+<p>
+  <a href="https://github.com/HolboxAI/newberryai">
+    <img src="https://img.shields.io/badge/GitHub-HolboxAI%2Fnewberryai-blue?logo=github&style=flat-square" alt="GitHub Repo">
+  </a>
+  <a href="https://pypi.org/project/newberryai/">
+    <img src="https://img.shields.io/pypi/v/newberryai?style=flat-square" alt="PyPI">
+  </a>
+  <a href="https://pypistats.org/packages/newberryai">
+    <img src="https://img.shields.io/pypi/dm/newberryai?style=flat-square" alt="PyPI - Downloads">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/pypi/l/newberryai?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/HolboxAI/newberryai/stargazers">
+    <img src="https://img.shields.io/github/stars/HolboxAI/newberryai?style=flat-square" alt="GitHub stars">
+  </a>
+</p>
+
+
 # NewberryAI 
 
 **The complete AI toolkit that turns complex workflows into simple Python commands. From medical diagnosis to compliance checking, document analysis to face recognition - NewberryAI brings enterprise-grade AI capabilities to your fingertips.**
@@ -53,6 +74,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 📄 Document Processing
 - **PDF Summarizer**: Intelligent document summarization
 - **PDF Extractor**: Semantic search and content extraction
+- **Handwriting to Text Converter**: Extract handwritten text from images using AI
 
 ### 🎨 Media Generation
 - **Video Generator**: Text-to-video with Amazon Bedrock Nova
@@ -62,6 +84,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 ### 🔍 Computer Vision
 - **Face Recognition**: Identity management with AWS Rekognition
 - **Face Detection**: Video face detection and tracking
+
 
 ### 💻 Development Tools
 - **Coding Assistant**: Code review and debugging support
@@ -721,24 +744,90 @@ newberryai speech_to_speech
 
 ---
 
-## ⚙️Requirements
+## 19. Handwriting to Text Converter
 
-- Python 3.8+
-- AWS Account (for AWS-powered features)
-- OpenAI API key
-- Additional API keys for specific features:
-  - Fashn API credentials (for Virtual Try-On)
-  - Database access (for NL2SQL)
+### Environment Setup
+```bash
+# AWS Credentials (for S3 access or AWS-powered features)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+# Extract handwritten text from an image using AI.
+from newberryai import Handwrite2Text
+
+# Initialize the handwriting-to-text converter
+handwriter = Handwrite2Text()
+
+# Path to your handwritten document image
+image_path = 'handwritten_note.jpg'
+
+# Extract handwritten text from the image
+extracted_text = handwriter.extract_text(image_path)
+
+print("Extracted Handwritten Text:")
+print(extracted_text)
+```
+
+### CLI Usage
+```sh
+newberryai handwritten2text --file_path handwritten_note.jpg
+newberryai handwritten2text --gradio
+```
+
 ---
-## 🛠️ Troubleshooting
 
-- SSL errors:  
-  ```sh
-  pip install --upgrade certifi
-  export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
-  ```
+## 20. Image Search 
 
----
-## 📄 License
+### Environment Setup
+```bash
+# AWS Credentials (for S3 access)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
 
-MIT License
+### How it works
+- Upload your images to your S3 bucket (using AWS Console, CLI, or script).
+- Build the index using the CLI or Python API (this creates a local FAISS index from your S3 images, using Amazon Titan Multimodal Embeddings G1 for all embeddings).
+- Search images using natural language (text-to-image, powered by Titan text embeddings) or by image (image-to-image, powered by Titan image embeddings) via CLI, Gradio, or Python API.
+
+### Python SDK
+```python
+from newberryai import ImageSearch
+from PIL import Image
+
+# Initialize with your S3 bucket name
+searcher = ImageSearch(s3_bucket='your-bucket-name')
+
+# Build the index (create FAISS index from S3 images)
+searcher.build_index(prefix='optional/folder/')
+
+# Search for images by text
+results = searcher.search('A cat sitting on a sofa', k=5)
+for r in results:
+    print(r['image_url'], r['distance'], r['folder'])
+
+# Search for images by image
+query_image = Image.open('query.jpg')
+results = searcher.search_by_image(query_image, k=5)
+for r in results:
+    print(r['image_url'], r['distance'], r['folder'])
+```
+
+### CLI Usage
+```sh
+# Build the index from your S3 images
+newberryai img_search --s3_bucket your-bucket-name --build_index
+
+# Search via CLI (choose text or image search at prompt)
+newberryai img_search --s3_bucket your-bucket-name --cli
+
+# Launch Gradio UI (text and image search, with tabs)
+newberryai img_search --s3_bucket your-bucket-name --gradio
+```
+
+**Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
