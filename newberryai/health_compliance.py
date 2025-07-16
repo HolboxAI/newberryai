@@ -53,7 +53,7 @@ class VideoFrameExtractor:
 class ClaudeAnalyzer:
     """Analyzes video frames using Claude via Amazon Bedrock."""
     
-    def __init__(self, compliance_session ):
+    def __init__(self, compliance_session, model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"):
         """
         Initialize the Claude analyzer.
         
@@ -61,6 +61,7 @@ class ClaudeAnalyzer:
             model_id: Claude model ID to use for analysis
         """
         self.bedrock_client = compliance_session.client('bedrock-runtime')
+        self.model_id = model_id
     
     def analyze_frames(self, frame_paths: List[str], prompt: str, max_retries: int = 3) -> Dict[str, Any]:
         """
@@ -116,7 +117,7 @@ class ClaudeAnalyzer:
 
                 # Call Claude via Bedrock
                 response = self.bedrock_client.invoke_model(
-                    modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    modelId=self.model_id,
                     contentType =  "application/json",
                     accept = "application/json",
                     body=json.dumps({
@@ -155,12 +156,12 @@ class ClaudeAnalyzer:
 class ComplianceChecker:
     """Main class for checking video compliance using Claude."""
     
-    def __init__(self ):
+    def __init__(self, model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"):
         """
         Initialize the compliance checker.
         
         Args:
-            model_id: Claude model ID to use for analysis
+            model_id: Claude model ID to use for analysis (default: Claude 3.5 Sonnet)
             upload_folder: Directory to store uploaded files
         """
         self.region = os.environ.get("AWS_REGION", "us-east-1")
@@ -172,7 +173,7 @@ class ComplianceChecker:
                 aws_secret_access_key=self.aws_secret_access_key
         )
         self.frame_extractor = VideoFrameExtractor()
-        self.analyzer = ClaudeAnalyzer(self.compliance_session)
+        self.analyzer = ClaudeAnalyzer(self.compliance_session, model_id=model_id)
     
     def check_compliance(self, video_file: str, prompt: str) -> Tuple[Dict[str, Any], Optional[int]]:
         """
