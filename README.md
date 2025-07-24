@@ -60,6 +60,7 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 - **HealthScribe**: Medical transcription with AWS HealthScribe
 - **Differential Diagnosis Assistant(DDX)**: Clinical diagnosis support
 - **Medical Bill Extractor**: Automated medical billing analysis
+- **EDI 835 Generator**: Generate EDI 835 files from medical documents
 
 ### 🔒 Compliance & Security
 - **Compliance Checker**: Video analysis for regulatory compliance
@@ -363,7 +364,7 @@ OPENAI_API_KEY=your_openai_api_key
 
 ### Python SDK
 ```python
-#Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis
+# Perform detailed data exploration with real statistics, hypothesis testing, actionable insights, and visualizations—no code, just direct analysis
 
 from newberryai import EDA
 import pandas as pd
@@ -371,8 +372,21 @@ import pandas as pd
 eda = EDA()
 eda.current_data = pd.read_csv(r'your_csv.csv')
 
+# Ask questions about your data
 response = eda.ask("What is the average value of column 'xyz'?")
 print(response)
+
+# Generate visualizations (distribution, correlation, categorical, time series)
+# Show all visualizations:
+eda.visualize_data()
+# Show only distribution plots:
+eda.visualize_data(plot_type="dist")
+# Show only correlation heatmap:
+eda.visualize_data(plot_type="corr")
+# Show only categorical plots:
+eda.visualize_data(plot_type="cat")
+# Show only time series plots:
+eda.visualize_data(plot_type="time")
 ```
 
 ### CLI Usage
@@ -380,6 +394,13 @@ print(response)
 newberryai eda --file_path your_csv.csv --question "What is the average value of column 'target'?"
 newberryai eda --interactive
 newberryai eda --gradio
+
+# Visualization commands (in interactive CLI):
+#   visualize or viz           # Show all visualizations
+#   visualize dist or viz dist # Show distribution plots
+#   visualize corr or viz corr # Show correlation heatmap
+#   visualize cat or viz cat   # Show categorical plots
+#   visualize time or viz time # Show time series plots
 ```
 
 ---
@@ -831,3 +852,39 @@ newberryai img_search --s3_bucket your-bucket-name --gradio
 ```
 
 **Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
+
+---
+
+## 21. EDI 835 Generator
+
+### Environment Setup
+```bash
+# AWS Credentials (required for Bedrock/Claude model)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+# Generate EDI 835 files from medical documents (image or PDF)
+from newberryai import EDI835Extractor
+
+extractor = EDI835Extractor()
+edi_835_output = extractor.analyze_document('your_medical_bill_or_remittance.pdf')
+print(edi_835_output)
+```
+
+### CLI Usage
+```sh
+newberryai edi835 --file_path your_medical_bill_or_remittance.pdf
+newberryai edi835 --interactive
+newberryai edi835 --gradio
+```
+
+- Upload a hospital or medical document (image or PDF).
+- The AI will detect the document type and generate a valid EDI 835 file as plain text (no JSON, no markdown).
+- If required data is missing, placeholder values will be used in the EDI output.
+- Output is ready to save as `.edi` or `.txt`.
+
+---
