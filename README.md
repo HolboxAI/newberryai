@@ -855,7 +855,14 @@ newberryai img_search --s3_bucket your-bucket-name --gradio
 
 ---
 
-## 21. EDI 835 Generator
+## 21. EDI Generator
+
+NewberryAI supports generating three major EDI formats from medical documents:
+- **EDI 835**: Electronic Remittance Advice (payment/remittance details)
+- **EDI 837**: Health Care Claim (claim submission)
+- **EDI 270**: Eligibility Inquiry (insurance eligibility check)
+
+You can generate any of these by selecting the appropriate extractor or CLI command.
 
 ### Environment Setup
 ```bash
@@ -867,23 +874,44 @@ AWS_DEFAULT_REGION=us-east-1
 
 ### Python SDK
 ```python
-# Generate EDI 835 files from medical documents (image or PDF)
-from newberryai import EDI835Extractor
+from newberryai import EDIGenerator
 
-extractor = EDI835Extractor()
-edi_835_output = extractor.analyze_document('your_medical_bill_or_remittance.pdf')
+# EDI 835: Remittance Advice
+era = EDIGenerator("835")
+edi_835_output = era.analyze_document('your_medical_bill_or_remittance.pdf')
 print(edi_835_output)
+
+# EDI 837: Health Care Claim
+claim = EDIGenerator("837")
+edi_837_output = claim.analyze_document('your_medical_visit_summary.pdf')
+print(edi_837_output)
+
+# EDI 270: Eligibility Inquiry
+elig = EDIGenerator("270")
+edi_270_output = elig.analyze_document('your_patient_insurance_details.pdf')
+print(edi_270_output)
 ```
 
 ### CLI Usage
 ```sh
+# EDI 835 (Remittance Advice)
 newberryai edi835 --file_path your_medical_bill_or_remittance.pdf
 newberryai edi835 --interactive
 newberryai edi835 --gradio
+
+# EDI 837 (Health Care Claim)
+newberryai edi837 --file_path your_medical_visit_summary.pdf
+newberryai edi837 --interactive
+newberryai edi837 --gradio
+
+# EDI 270 (Eligibility Inquiry)
+newberryai edi270 --file_path your_patient_insurance_details.pdf
+newberryai edi270 --interactive
+newberryai edi270 --gradio
 ```
 
-- Upload a hospital or medical document (image or PDF).
-- The AI will detect the document type and generate a valid EDI 835 file as plain text (no JSON, no markdown).
+- Upload a relevant medical document (image or PDF).
+- The AI will extract required data and generate a valid EDI file as plain text (no JSON, no markdown).
 - If required data is missing, placeholder values will be used in the EDI output.
 - Output is ready to save as `.edi` or `.txt`.
 

@@ -1,14 +1,14 @@
 from newberryai.health_chat import HealthChat
 import os
 
-Sys_Prompt = """
+Sys_Prompt_835 = """
 You are an expert in medical billing and EDI standards, especially the EDI 835 (Electronic Remittance Advice) format.
 
 Your task is to analyze hospital or medical documents and generate a valid EDI 835 file.
 
 IMPORTANT INSTRUCTIONS:
 
-1. First, detect whether the document is a **Medical Bill**, **Remittance Note**, or **Other**.
+1. First, detect whether the document is a Medical Bill, Remittance Note, or Other.
 2. If it's a Medical Bill or Remittance Note, extract relevant financial, procedural, and insurance information.
 3. Then use that information to generate an EDI 835 file in standard format.
 4. The output must be a valid raw EDI 835 string — no explanations, comments, or extra formatting.
@@ -20,89 +20,119 @@ ISA, GS, ST, BPR, TRN, N1, CLP, CAS, SE, GE, IEA
 Required Data Points:
 - Patient Name
 - Date of Service
-- Services Rendered (with descriptions and codes if available)
+- Services Rendered
 - Total Amount Billed
 - Amount Paid
 - Insurance Provider
-- Adjustments (if any)
+- Adjustments
 - Claim Number or Invoice Number
 - Payment Date
 - Payment Method
-- Provider Information (Hospital/Clinic Name)
+- Provider Information
 
-STRICT RULES:
-- If data is missing in the input, use placeholder values (e.g., "UNKNOWN", "000000", "N/A") in the EDI.
-- You must still return a structurally valid EDI 835.
-- DO NOT return JSON, markdown, or explanation — return only plain EDI text.
-- Output should be ready to save as `.edi` or `.txt`.
-
-Example Input (Medical Doc):
-Patient: John Doe
-Date of Service: July 12, 2025
-Diagnosis: Acute bronchitis
-Procedure: Office visit, chest X-ray
-Total Charge: $250
-Paid Amount: $200
-Insurance Provider: Blue Cross
-Adjustment Reason: Contractual Obligation
-Claim Number: 12345678
-Payment Date: July 20, 2025
-
-Now generate the EDI 835 for this input.
-
-If no medical content is provided, return only the word: "None".
+Use placeholder values (e.g., "UNKNOWN", "000000", "N/A") where data is missing. Return only EDI string.
 """
 
-class EDI835Extractor:
+Sys_Prompt_837 = """
+You are a healthcare billing assistant. Your task is to generate a valid EDI 837 (Health Care Claim) file.
+
+Given a medical visit summary, extract:
+- Patient Name
+- Date of Birth
+- Gender
+- Provider Name
+- Provider NPI (use "1234567890" if not found)
+- Diagnosis Codes (ICD-10)
+- Procedure Codes (CPT)
+- Date of Service
+- Claim Amount
+- Insurance Info
+
+Output must follow EDI 837 format including:
+ISA, GS, ST, BHT, NM1, N3, N4, DMG, CLM, HI, SV1, SE, GE, IEA
+
+Use placeholder values where data is missing. Return raw EDI only — no notes or JSON.
+"""
+
+Sys_Prompt_270 = """
+You are a healthcare assistant tasked with generating an EDI 270 Eligibility Inquiry.
+
+Given patient demographics and insurance details, generate an EDI 270 request.
+
+Extract:
+- Patient Name
+- Date of Birth
+- Gender
+- Insurance Provider
+- Policy/Subscriber ID
+
+Output must include:
+ISA, GS, ST, BHT, NM1, DMG, DTP, EQ, SE, GE, IEA
+
+Return only raw EDI string, no explanations or formatting.
+"""
+
+
+EDI_PROMPTS = {
+    "835": Sys_Prompt_835,
+    "837": Sys_Prompt_837,
+    "270": Sys_Prompt_270
+}
+
+
+class EDIGenerator:
     """
-    A class for generating EDI 835 files from hospital or medical documents using the ChatQA model.
-    Focused on image and document processing for EDI output.
+    Generate EDI documents (835, 837, 270) from hospital or medical files using ChatQA.
     """
 
-    def __init__(self):
-        """Initialize the EDI 835 Extractor with the ChatQA assistant."""
-        self.assistant = HealthChat(system_prompt=Sys_Prompt)
+    def __init__(self, edi_type="835"):
+        """Initialize the EDI Generator with the selected EDI prompt."""
+        if edi_type not in EDI_PROMPTS:
+            raise ValueError(f"Unsupported EDI type: {edi_type}")
+        self.edi_type = edi_type
+        self.assistant = HealthChat(system_prompt=EDI_PROMPTS[edi_type])
 
     def start_gradio(self):
-        """Launch the Gradio interface for the EDI 835 Extractor."""
+        """Launch Gradio interface for document upload and EDI generation."""
         self.assistant.launch_gradio(
-            title="Generate EDI 835 from Medical Documents",
-            description="Upload a hospital or medical document. The AI will detect the type and generate a valid EDI 835 file.",
+            title=f"Generate EDI {self.edi_type.upper()} from Medical Documents",
+            description=f"Upload a medical document. The AI will detect content and generate a valid EDI {self.edi_type.upper()} file.",
             input_text_label="Additional instructions (optional)",
             input_files_label="Upload document (required)",
-            output_label="Generated EDI 835 (raw text)"
+            output_label=f"Generated EDI {self.edi_type.upper()} (raw text)"
         )
 
     def run_cli(self):
-        """Run the interactive CLI interface for EDI 835 generation."""
-        print(f"EDI 835 Generator initialized")
+        """Run CLI-based interface to test EDI generation interactively."""
+        print(f"EDI {self.edi_type.upper()} Generator initialized.")
         print("Type 'exit' or 'quit' to end the conversation.")
-        print("To analyze a document: type the path to the document file")
-        
+        print("To analyze a document: type the path to the document file.")
+
         while True:
             user_input = input("\nDocument path: ")
             if user_input.lower() in ["exit", "quit"]:
                 print("Goodbye!")
                 break
-            
+
             if not os.path.exists(user_input):
                 print(f"Error: File not found at path: {user_input}")
                 continue
-                
-            print("\nGenerating EDI 835... ", end="")
+
+            print("\nGenerating EDI... Please wait.")
             answer = self.analyze_document(user_input)
-            print("\nEDI 835 Output:")
+            print("\nGenerated EDI Output:\n")
             print(answer)
 
     def analyze_document(self, file_path: str, **kwargs):
         """
-        Analyze a document and generate an EDI 835 file
-        
+        Analyze a file and generate EDI based on initialized type.
+
         Args:
-            file_path (str): Path to an image or document file
-            
+            file_path (str): Path to a file (PDF/Image/Text)
+
         Returns:
-            str: AI's EDI 835 response
+            str: AI-generated EDI content
         """
-        default_prompt = "Please analyze this document and generate a valid EDI 835 file in standard format."
+        default_prompt = f"Please analyze this document and generate a valid EDI {self.edi_type.upper()} file in standard format."
         return self.assistant.ask(question=default_prompt, file_path=file_path, **kwargs)
+

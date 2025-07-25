@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDI835Extractor)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator)
 import asyncio
 from pathlib import Path
 import json
@@ -555,7 +555,7 @@ def img_search_command(args):
         print("No action specified. Use --build_index, --gradio, or --cli.")
 
 def edi835_command(args):
-    extractor = EDI835Extractor()
+    extractor = EDIGenerator(edi_type="835")
     if args.gradio:
         print(f"Launching Gradio interface for EDI 835 Generator")
         extractor.start_gradio()
@@ -568,6 +568,42 @@ def edi835_command(args):
         print(f"Generating EDI 835 for document: {args.file_path}")
         response = extractor.analyze_document(args.file_path)
         print("\nEDI 835 Output:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def edi837_command(args):
+    extractor = EDIGenerator(edi_type="837")
+    if args.gradio:
+        print(f"Launching Gradio interface for EDI 837 Generator")
+        extractor.start_gradio()
+    elif args.interactive:
+        extractor.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Generating EDI 837 for document: {args.file_path}")
+        response = extractor.analyze_document(args.file_path)
+        print("\nEDI 837 Output:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def edi270_command(args):
+    extractor = EDIGenerator(edi_type="270")
+    if args.gradio:
+        print(f"Launching Gradio interface for EDI 270 Generator")
+        extractor.start_gradio()
+    elif args.interactive:
+        extractor.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Generating EDI 270 for document: {args.file_path}")
+        response = extractor.analyze_document(args.file_path)
+        print("\nEDI 270 Output:")
         print(response)
     else:
         print("Check the argument via --help")
@@ -796,6 +832,20 @@ def main():
     edi835_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
     edi835_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
     edi835_parser.set_defaults(func=edi835_command)
+
+    # EDI 837 Command
+    edi837_parser = subparsers.add_parser('edi837', help='Generate EDI 837 from medical documents')
+    edi837_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
+    edi837_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    edi837_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    edi837_parser.set_defaults(func=edi837_command)
+
+    # EDI 270 Command
+    edi270_parser = subparsers.add_parser('edi270', help='Generate EDI 270 from medical documents')
+    edi270_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
+    edi270_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    edi270_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    edi270_parser.set_defaults(func=edi270_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()

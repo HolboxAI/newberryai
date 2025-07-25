@@ -21,7 +21,7 @@ setup(
     name="newberryai",
     use_scm_version=True,
     setup_requires=["setuptools_scm"],
-    author="Saurabh Patil, Jaideepsinh Dabhi, Harsh Langaliya , Harshika Agarwal , SatyaNarayana Saho,Maya Chitor",
+    author="Saurabh Patil, Jaideepsinh Dabhi, Harsh Langaliya , Harshika Agarwal , SatyaNarayana Saho , Maya Chitor",
     author_email="jaideep@newberry.ai",
     description="NewberryAI Python Package",
     packages=find_packages(),
