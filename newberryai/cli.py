@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier)
 import asyncio
 from pathlib import Path
 import json
@@ -608,6 +608,26 @@ def edi270_command(args):
     else:
         print("Check the argument via --help")
 
+def claim_verifier_command(args):
+    """Handle the medical claim verifier subcommand."""
+    verifier = MedicalClaimVerifier()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Medical Claim Verifier")
+        verifier.start_gradio()
+    elif args.interactive:
+        verifier.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Verifying claim from document: {args.file_path}")
+        result = verifier.verify_claim_from_document(args.file_path, args.insurance_provider)
+        print("\nClaim Verification Results:")
+        print(json.dumps(result, indent=2))
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -846,6 +866,14 @@ def main():
     edi270_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
     edi270_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
     edi270_parser.set_defaults(func=edi270_command)
+
+    # Medical Claim Verifier Command
+    claim_verifier_parser = subparsers.add_parser('claim_verifier', help='Verify medical claims and predict approval likelihood')
+    claim_verifier_parser.add_argument("--file_path", "-fp", type=str, help="Path to a medical document to verify")
+    claim_verifier_parser.add_argument("--insurance_provider", "-ip", type=str, help="Insurance provider name for specific analysis")
+    claim_verifier_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    claim_verifier_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    claim_verifier_parser.set_defaults(func=claim_verifier_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
