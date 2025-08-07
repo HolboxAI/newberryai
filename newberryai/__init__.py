@@ -23,3 +23,5 @@ from .handwritten2text import Handwrite2Text
 from .img_search import ImageSearch
 from .EDI import EDIGenerator
 from .MedicalClaimVerifier import MedicalClaimVerifier
+from .gpt_agent import GptAgent
+from .feature_gpt import FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent

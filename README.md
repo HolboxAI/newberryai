@@ -916,3 +916,70 @@ newberryai edi270 --gradio
 - Output is ready to save as `.edi` or `.txt`.
 
 ---
+## 22 GPT Features
+
+#### Environment Setup
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+```python
+ #Feature GPT-4o Summarizer
+
+from newberryai import FeatureGptSummarizer
+summarizer = FeatureGptSummarizer()
+summary = summarizer.ask(file_path="path_to_your_pdf_document.pdf")
+print(summary)
+
+#Feature GPT-4o Chat Assistant
+
+from newberryai import FeatureGptChat
+
+chat_assistant = FeatureGptChat()
+response = chat_assistant.ask("Hello! How can I assist you today?")
+print(response)
+
+
+#Feature GPT-4o Image Analyzer
+
+from newberryai import FeatureGptImage
+
+image_analyzer = FeatureGptImage()
+response = image_analyzer.ask(file_path="path_to_your_image.jpg")
+print(response)
+
+#Feature GPT-4o Agent
+
+from newberryai import FeatureGptAgent
+
+agent = FeatureGptAgent()
+response = agent.ask("Solve this problem: 12 * 15")
+print(response)
+
+
+```
+### CLI Usage
+```sh
+ #Feature GPT-4o Summarizer
+newberryai feature_gpt_summarizer --file_path YOUR_DOCUMENT.pdf --gradio
+newberryai feature_gpt_summarizer --interactive
+
+ #Feature GPT-4o Chat Assistant
+newberryai feature_gpt_chat --message "Hello, assistant!" --gradio
+newberryai feature_gpt_chat --interactive
+
+ #Feature GPT-4o Image Analyzer
+newberryai feature_gpt_image --file_path YOUR_IMAGE.png --gradio
+newberryai feature_gpt_image --interactive
+
+ #Feature GPT-4o Agent
+newberryai feature_gpt_agent --instruction "Solve this math problem: 12 * 15" --gradio
+newberryai feature_gpt_agent --interactive
+
+
+```
