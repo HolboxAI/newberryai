@@ -25,3 +25,5 @@ from .EDI import EDIGenerator
 from .MedicalClaimVerifier import MedicalClaimVerifier
 from .gpt_agent import GptAgent
 from .feature_gpt import FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent
+from .gpt_5 import GptAgent as GptAgent5
+from .features_gpt5 import FeatureGptSummarizer as FeatureGpt5Summarizer, FeatureGptChat as FeatureGpt5Chat, FeatureGptImage as FeatureGpt5Image, FeatureGptAgent as FeatureGpt5Agent

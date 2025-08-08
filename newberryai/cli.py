@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, GptAgent, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, GptAgent, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent,GptAgent5, FeatureGpt5Summarizer, FeatureGpt5Chat, FeatureGpt5Image, FeatureGpt5Agent)
 import asyncio
 from pathlib import Path
 import json
@@ -695,6 +695,22 @@ def feature_gpt_agent_command(args):
         print(response)
     else:
         print("Check the argument via --help")
+def feature_gpt5_agent_command(args):
+    """Handle the GPT-5 agent subcommand."""
+    agent = FeatureGpt5Agent()
+    if args.gradio:
+        print("Launching Gradio interface for GPT-5 Agent")
+        agent.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for GPT-5 Agent")
+        agent.run_cli()
+    elif args.instruction:
+        print(f"Instruction: {args.instruction}")
+        response = agent.ask(args.instruction)
+        print("\nAgent Response:")
+        print(response)
+    else:
+        print("Check the argument via --help")        
 
 def main():
     """Command line interface for NewberryAI tools."""
@@ -967,6 +983,7 @@ def main():
     feature_gpt_agent_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
     feature_gpt_agent_parser.add_argument("--interactive", "-I", action="store_true", help="Run in interactive CLI mode")
     feature_gpt_agent_parser.set_defaults(func=feature_gpt_agent_command)
+    
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
