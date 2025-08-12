@@ -929,57 +929,100 @@ AWS_DEFAULT_REGION=us-east-1
 ```
 
 ```python
- #Feature GPT-4o Summarizer
-
+# Feature GPT-5 Summarizer
 from newberryai import FeatureGptSummarizer
 summarizer = FeatureGptSummarizer()
 summary = summarizer.ask(file_path="path_to_your_pdf_document.pdf")
 print(summary)
 
-#Feature GPT-4o Chat Assistant
-
+# Feature GPT-5 Chat Assistant
 from newberryai import FeatureGptChat
-
 chat_assistant = FeatureGptChat()
 response = chat_assistant.ask("Hello! How can I assist you today?")
 print(response)
 
-
-#Feature GPT-4o Image Analyzer
-
+# Feature GPT-5 Image Analyzer
 from newberryai import FeatureGptImage
-
 image_analyzer = FeatureGptImage()
 response = image_analyzer.ask(file_path="path_to_your_image.jpg")
 print(response)
 
-#Feature GPT-4o Agent
-
+# Feature GPT-5 Agent
 from newberryai import FeatureGptAgent
-
 agent = FeatureGptAgent()
 response = agent.ask("Solve this problem: 12 * 15")
 print(response)
-
-
 ```
+
 ### CLI Usage
 ```sh
- #Feature GPT-4o Summarizer
-newberryai feature_gpt_summarizer --file_path YOUR_DOCUMENT.pdf --gradio
-newberryai feature_gpt_summarizer --interactive
+# Feature GPT-5 Summarizer
+newberryai feature_gpt5_summarizer --file_path YOUR_DOCUMENT.pdf --gradio
+newberryai feature_gpt5_summarizer --interactive
 
- #Feature GPT-4o Chat Assistant
-newberryai feature_gpt_chat --message "Hello, assistant!" --gradio
-newberryai feature_gpt_chat --interactive
+# Feature GPT-5 Chat Assistant
+newberryai feature_gpt5_chat --message "Hello, assistant!" --gradio
+newberryai feature_gpt5_chat --interactive
 
- #Feature GPT-4o Image Analyzer
-newberryai feature_gpt_image --file_path YOUR_IMAGE.png --gradio
-newberryai feature_gpt_image --interactive
+# Feature GPT-5 Image Analyzer
+newberryai feature_gpt5_image --file_path YOUR_IMAGE.png --gradio
+newberryai feature_gpt5_image --interactive
 
- #Feature GPT-4o Agent
-newberryai feature_gpt_agent --instruction "Solve this math problem: 12 * 15" --gradio
-newberryai feature_gpt_agent --interactive
-
+# Feature GPT-5 Agent
+newberryai feature_gpt5_agent --instruction "Solve this math problem: 12 * 15" --gradio
+newberryai feature_gpt5_agent --interactive
 
 ```
+
+## 23. Medical Claim Verifier
+
+### Environment Setup
+```bash
+# OpenAI Configuration (for LLM-powered analysis)
+OPENAI_API_KEY=your_openai_api_key
+# AWS Credentials (for EDI generation and document processing)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+from newberryai import MedicalClaimVerifier
+
+# Initialize the verifier
+verifier = MedicalClaimVerifier()
+
+# Verify a claim from a medical document (PDF/Image/Text)
+result = verifier.verify_claim_from_document('your_claim_document.pdf', insurance_provider='Blue Cross')
+print(result)
+
+# Validate specific requirements (ICD-10, eligibility, CPT)
+validation = verifier.validate_specific_requirements(file_path='your_claim_document.pdf')
+print(validation)
+
+# Verify an existing EDI 837 claim (if you already have EDI content)
+edi_content = "...EDI 837 content..."
+result_edi = verifier.verify_edi_837_claim(edi_content, insurance_provider='Blue Cross')
+print(result_edi)
+```
+
+### CLI Usage
+```sh
+# Verify a claim from a document
+newberryai claim_verifier --file_path your_claim_document.pdf --insurance_provider "Blue Cross"
+
+# Launch Gradio interface
+newberryai claim_verifier --gradio
+
+# Run in interactive CLI mode
+newberryai claim_verifier --interactive
+```
+
+- The CLI will output a JSON with approval prediction, risk factors, recommendations, and validation checks.
+- In interactive mode, you can use commands like:
+  - `verify <file_path>`: Verify a claim from document
+  - `edi <edi_837_content>`: Verify existing EDI 837 claim
+  - `validate <file_path>`: Validate specific requirements (ICD-10, eligibility, CPT)
+
+---

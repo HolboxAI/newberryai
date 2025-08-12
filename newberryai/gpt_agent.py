@@ -11,13 +11,13 @@ from typing import Optional
 import json
 
 class GptAgent:
-    def __init__(self, system_prompt: str = "", max_tokens: int = 1000, model: str = "gpt-4o"):
+    def __init__(self, system_prompt: str = "", max_tokens: int = 1000, model: str = "gpt-5"):
         """
-        Initialize GptAgent for GPT-4o.
+        Initialize GptAgent for GPT-5.
         Args:
             system_prompt (str): System prompt for the LLM.
             max_tokens (int): Max tokens for the LLM response.
-            model (str): OpenAI model name (default: gpt-4o).
+            model (str): OpenAI model name (default: gpt-5).
         """
         self.system_prompt = system_prompt
         self.max_tokens = max_tokens
@@ -102,17 +102,18 @@ class GptAgent:
     def ask(self, question: Optional[str] = None, file_path: Optional[str] = None, return_full_response: bool = False) -> str:
         if question is None and not file_path:
             return "Error: Please provide either a question, a file, or both."
+        
         messages = []
         if self.system_prompt:
             messages.append({"role": "system", "content": self.system_prompt})
+        
         if question:
             messages.append({"role": "user", "content": question})
-        files = None
+        
         if file_path:
             ext = os.path.splitext(file_path)[1].lower()
             try:
                 if ext in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
-                    # GPT-4o supports image input
                     with open(file_path, "rb") as img_file:
                         image_bytes = img_file.read()
                     messages.append({
@@ -132,13 +133,13 @@ class GptAgent:
                     messages.append({"role": "user", "content": f"Unsupported file type '{ext}' uploaded."})
             except Exception as e:
                 return f"Error processing file '{file_path}': {str(e)}"
+        
         try:
             response = openai.chat.completions.create(
                 model=self.model,
-                messages=messages,
-                max_tokens=self.max_tokens,
-                temperature=0.0
+                messages=messages
             )
+            
             if return_full_response:
                 return response
             return response.choices[0].message.content
@@ -146,7 +147,7 @@ class GptAgent:
             return f"Error: {str(e)}"
 
     def launch_gradio(self,
-        title: str = "GPT-4o Assistant",
+        title: str = "GPT-5 Assistant",
         description: str = "Ask a question OR upload a file (PDF, CSV, image, etc.) or both",
         input_text_label: str = "Your question (optional if file is provided)",
         input_files_label: str = "Upload a file (PDF, CSV, image, etc.; optional if question is provided)",
@@ -178,8 +179,8 @@ class GptAgent:
                     else:
                         with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
                             temp_file_path = tmp.name
-                            with open(original_name, 'rb') as src, open(temp_file_path, 'wb') as dst:
-                                dst.write(src.read())
+                            with open(original_name, 'rb') as src, open(temp_file_path, 'wb') as tmp:
+                                tmp.write(src.read())
                     if not os.path.exists(temp_file_path) or os.path.getsize(temp_file_path) == 0:
                         return "Error: File was not written correctly"
                     response = self.ask(question=query if query else None, file_path=temp_file_path)
@@ -210,7 +211,7 @@ class GptAgent:
         iface.launch(share=share)
 
     def run_cli(self) -> None:
-        print(f"GPT-4o Agent initialized.")
+        print(f"GPT-5 Agent initialized.")
         print("Type 'exit' or 'quit' to end the conversation.")
         print("To ask a question: simply type your question")
         print("To analyze a file: type 'file:' followed by the path to the file")
@@ -229,6 +230,6 @@ class GptAgent:
                     query = parts[1]
             else:
                 query = user_input
-            print("\nGPT-4o: ", end="")
+            print("\nGPT-5: ", end="")
             answer = self.ask(question=query, file_path=file_path)
             print(answer)

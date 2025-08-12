@@ -1,28 +1,21 @@
-from .gpt_5 import GptAgent
+from .gpt_agent import GptAgent
 import tempfile
 import os
 
 # Summarizer Prompt
-Sys_Prompt_Summarizer = """
-You are an expert AI document summarizer. Your job is to read, analyze, and summarize documents in a way that is clear, concise, and highly informative.
+Sys_Prompt_Summarizer = """You are an AI document summarizer. Your task is to:
 
-Instructions:
-- Carefully read the entire document and extract all key points, main ideas, and important details.
-- Write a summary that is comprehensive but avoids unnecessary repetition or trivial information.
-- Maintain the original context, intent, and meaning of the document.
-- Highlight critical facts, conclusions, and any actionable insights.
-- Organize the summary logically, using sections or bullet points if appropriate.
-- Adapt the length and level of detail based on the document's complexity and the user's instructions.
-- Use professional, objective, and neutral language.
-- Preserve technical terms and domain-specific vocabulary.
-- If the document contains data, statistics, or figures, include the most relevant ones in the summary.
-- If the user provides additional instructions, follow them precisely.
-- Always check for factual consistency and avoid hallucinating information.
+1. Read and analyze the provided document content thoroughly
+2. Identify the main topic, key arguments, and important findings
+3. Extract the most relevant information and data points
+4. Provide a comprehensive summary that includes:
+   - Main topic and purpose of the document
+   - Key findings and conclusions
+   - Important data, statistics, or evidence mentioned
+   - Any recommendations or future implications
+   - Overall significance of the content
 
-Output:
-- Provide only the summary, no extra commentary or explanations.
-- If the document is not suitable for summarization, politely explain why.
-"""
+Format your response as a clear, well-structured summary that captures the essence of the document. Be thorough but concise, focusing on the most important information that would be valuable to someone who hasn't read the full document."""
 
 # Chat Prompt
 Sys_Prompt_Chat = """
@@ -45,23 +38,21 @@ Output:
 """
 
 # Image Analysis Prompt
-Sys_Prompt_Image = """
-You are an expert AI image analysis assistant.
+Sys_Prompt_Image = """You are an expert AI image analysis assistant.
 
-Instructions:
-- When given an image, analyze it thoroughly and describe its content in detail.
-- Identify and list all objects, people, scenes, and notable features present in the image.
-- If the image contains text, transcribe it accurately.
-- If the user provides a question or instruction, answer it based on the image content.
-- Provide insights about the image, such as context, possible intent, or any anomalies.
-- If relevant, comment on the style, quality, or technical aspects of the image (e.g., lighting, composition).
-- If the image is a document, extract and summarize the key information.
-- If the image is unclear or low quality, mention this and do your best with the available data.
-- Always be objective and avoid guessing if the content is ambiguous.
+Produce a concise, decision‑useful analysis.
 
-Output:
-- Provide a detailed, structured analysis or answer.
-- If the image cannot be analyzed, explain why.
+Output format (strict):
+- Overview: 1 sentence summarizing the image.
+- Key elements (max 5 bullets): concrete objects/people/scenes.
+- Text (if any): brief transcription or "none".
+- Notable insights (max 3 bullets): context, anomalies, or quality notes.
+- Answer: if a question was asked, answer in ≤2 sentences.
+
+Rules:
+- Keep the entire response within 150–180 words.
+- Prefer specificity over verbosity; avoid repetition and generic descriptions.
+- Do not speculate beyond what is visibly supported.
 """
 
 # Agent Prompt
@@ -115,6 +106,13 @@ class FeatureGptSummarizer:
     def ask(self, file_path, **kwargs):
         if not isinstance(file_path, str):
             return "Error: Please provide a valid document path."
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return f"Error: File not found at {file_path}"
+        
+        # For summarizer, we want to analyze the document content
+        # Pass the file_path to the agent's ask method
         return self.assistant.ask(file_path=file_path, **kwargs)
 
 class FeatureGptChat:
@@ -190,6 +188,19 @@ class FeatureGptImage:
     def ask(self, file_path, **kwargs):
         if not isinstance(file_path, str):
             return "Error: Please provide a valid image path."
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return f"Error: File not found at {file_path}"
+        
+        # Check if it's a valid image file
+        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        file_ext = os.path.splitext(file_path)[1].lower()
+        if file_ext not in valid_extensions:
+            return f"Error: Unsupported image format. Supported formats: {', '.join(valid_extensions)}"
+        
+        # For image analysis, we want to analyze the image content
+        # Pass the file_path to the agent's ask method
         return self.assistant.ask(file_path=file_path, **kwargs)
 
 class FeatureGptAgent:
@@ -266,4 +277,10 @@ class FeatureGptAgent:
     def ask(self, question, **kwargs):
         if not isinstance(question, str):
             return "Error: Please provide a valid instruction or question."
-        return self.assistant.ask(question=question, **kwargs)
+        
+        # Extract file_path from kwargs if provided
+        file_path = kwargs.get('file_path')
+        
+        # For agent tasks, we can have both question and file_path
+        # Pass both to the agent's ask method
+        return self.assistant.ask(question=question, file_path=file_path, **kwargs)

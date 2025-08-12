@@ -2,13 +2,13 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, GptAgent, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent,GptAgent5, FeatureGpt5Summarizer, FeatureGpt5Chat, FeatureGpt5Image, FeatureGpt5Agent)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, GptAgent, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
 import asyncio
 from pathlib import Path
 import json
 import base64
 from newberryai.virtual_tryon import VirtualTryOn
-from .agent import Agent
+from newberryai.agent import Agent
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -629,13 +629,13 @@ def claim_verifier_command(args):
         print("Check the argument via --help")
 
 def feature_gpt_summarizer_command(args):
-    """Handle the GPT-4o PDF summarizer subcommand."""
+    """Handle the GPT-5 PDF summarizer subcommand."""
     summarizer = FeatureGptSummarizer()
     if args.gradio:
-        print("Launching Gradio interface for GPT-4o PDF Summarizer")
+        print("Launching Gradio interface for GPT-5 PDF Summarizer")
         summarizer.start_gradio()
     elif args.interactive:
-        print("Starting interactive session for GPT-4o PDF Summarizer")
+        print("Starting interactive session for GPT-5 PDF Summarizer")
         summarizer.run_cli()
     elif args.file_path:
         print(f"Analyzing document: {args.file_path}")
@@ -646,13 +646,13 @@ def feature_gpt_summarizer_command(args):
         print("Check the argument via --help")
 
 def feature_gpt_chat_command(args):
-    """Handle the GPT-4o chat assistant subcommand."""
+    """Handle the GPT-5 chat assistant subcommand."""
     chat = FeatureGptChat()
     if args.gradio:
-        print("Launching Gradio interface for GPT-4o Chat Assistant")
+        print("Launching Gradio interface for GPT-5 Chat Assistant")
         chat.start_gradio()
     elif args.interactive:
-        print("Starting interactive session for GPT-4o Chat Assistant")
+        print("Starting interactive session for GPT-5 Chat Assistant")
         chat.run_cli()
     elif args.message:
         print(f"Message: {args.message}")
@@ -663,13 +663,13 @@ def feature_gpt_chat_command(args):
         print("Check the argument via --help")
 
 def feature_gpt_image_command(args):
-    """Handle the GPT-4o image analysis subcommand."""
+    """Handle the GPT-5 image analysis subcommand."""
     image = FeatureGptImage()
     if args.gradio:
-        print("Launching Gradio interface for GPT-4o Image Analyzer")
+        print("Launching Gradio interface for GPT-5 Image Analyzer")
         image.start_gradio()
     elif args.interactive:
-        print("Starting interactive session for GPT-4o Image Analyzer")
+        print("Starting interactive session for GPT-5 Image Analyzer")
         image.run_cli()
     elif args.file_path:
         print(f"Analyzing image: {args.file_path}")
@@ -680,24 +680,8 @@ def feature_gpt_image_command(args):
         print("Check the argument via --help")
 
 def feature_gpt_agent_command(args):
-    """Handle the GPT-4o agent subcommand."""
-    agent = FeatureGptAgent()
-    if args.gradio:
-        print("Launching Gradio interface for GPT-4o Agent")
-        agent.start_gradio()
-    elif args.interactive:
-        print("Starting interactive session for GPT-4o Agent")
-        agent.run_cli()
-    elif args.instruction:
-        print(f"Instruction: {args.instruction}")
-        response = agent.ask(args.instruction)
-        print("\nAgent Response:")
-        print(response)
-    else:
-        print("Check the argument via --help")
-def feature_gpt5_agent_command(args):
     """Handle the GPT-5 agent subcommand."""
-    agent = FeatureGpt5Agent()
+    agent = FeatureGptAgent()
     if args.gradio:
         print("Launching Gradio interface for GPT-5 Agent")
         agent.start_gradio()
@@ -710,7 +694,7 @@ def feature_gpt5_agent_command(args):
         print("\nAgent Response:")
         print(response)
     else:
-        print("Check the argument via --help")        
+        print("Check the argument via --help")
 
 def main():
     """Command line interface for NewberryAI tools."""
@@ -959,31 +943,33 @@ def main():
     claim_verifier_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
     claim_verifier_parser.set_defaults(func=claim_verifier_command)
 
-    # Feature GPT-4o PDF Summarizer Command (renamed)
-    feature_gpt_summarizer_parser = subparsers.add_parser('feature_gpt_summarizer', help='Extract and summarize content from PDF documents using GPT-4o')
-    feature_gpt_summarizer_parser.add_argument("--file_path", "-f", type=str, help="Path to the PDF document to analyze")
-    feature_gpt_summarizer_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
-    feature_gpt_summarizer_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
-    feature_gpt_summarizer_parser.set_defaults(func=feature_gpt_summarizer_command)
-    # Feature GPT-4o Chat Assistant Command
-    feature_gpt_chat_parser = subparsers.add_parser('feature_gpt_chat', help='Chat with GPT-4o AI assistant')
-    feature_gpt_chat_parser.add_argument("--message", "-m", type=str, help="Message to send to the chat assistant")
-    feature_gpt_chat_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
-    feature_gpt_chat_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
-    feature_gpt_chat_parser.set_defaults(func=feature_gpt_chat_command)
-    # Feature GPT-4o Image Analyzer Command
-    feature_gpt_image_parser = subparsers.add_parser('feature_gpt_image', help='Analyze images using GPT-4o')
-    feature_gpt_image_parser.add_argument("--file_path", "-f", type=str, help="Path to the image file to analyze")
-    feature_gpt_image_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
-    feature_gpt_image_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
-    feature_gpt_image_parser.set_defaults(func=feature_gpt_image_command)
-    # Feature GPT-4o Agent Command
-    feature_gpt_agent_parser = subparsers.add_parser('feature_gpt_agent', help='Use GPT-4o as an advanced agent for reasoning and tasks')
-    feature_gpt_agent_parser.add_argument("--instruction", "-i", type=str, help="Instruction or question for the agent")
-    feature_gpt_agent_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
-    feature_gpt_agent_parser.add_argument("--interactive", "-I", action="store_true", help="Run in interactive CLI mode")
-    feature_gpt_agent_parser.set_defaults(func=feature_gpt_agent_command)
-    
+    # Feature GPT-5 Summarizer Command
+    feature_gpt5_summarizer_parser = subparsers.add_parser('feature_gpt5_summarizer', help='Extract and summarize content from PDF documents using GPT-5')
+    feature_gpt5_summarizer_parser.add_argument("--file_path", "-f", type=str, help="Path to the PDF document to analyze")
+    feature_gpt5_summarizer_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_summarizer_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_summarizer_parser.set_defaults(func=feature_gpt_summarizer_command)
+
+    # Feature GPT-5 Chat Assistant Command
+    feature_gpt5_chat_parser = subparsers.add_parser('feature_gpt5_chat', help='Chat with GPT-5 AI assistant')
+    feature_gpt5_chat_parser.add_argument("--message", "-m", type=str, help="Message to send to the chat assistant")
+    feature_gpt5_chat_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_chat_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_chat_parser.set_defaults(func=feature_gpt_chat_command)
+
+    # Feature GPT-5 Image Analyzer Command
+    feature_gpt5_image_parser = subparsers.add_parser('feature_gpt5_image', help='Analyze images using GPT-5')
+    feature_gpt5_image_parser.add_argument("--file_path", "-f", type=str, help="Path to the image file to analyze")
+    feature_gpt5_image_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_image_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_image_parser.set_defaults(func=feature_gpt_image_command)
+
+    # Feature GPT-5 Agent Command (already implemented handler: feature_gpt5_agent_command)
+    feature_gpt5_agent_parser = subparsers.add_parser('feature_gpt5_agent', help='Use GPT-5 as an advanced agent for reasoning and tasks')
+    feature_gpt5_agent_parser.add_argument("--instruction", "-i", type=str, help="Instruction or question for the agent")
+    feature_gpt5_agent_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_agent_parser.add_argument("--interactive", "-I", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_agent_parser.set_defaults(func=feature_gpt_agent_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
