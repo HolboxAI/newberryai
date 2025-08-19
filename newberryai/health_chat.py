@@ -341,8 +341,8 @@ class HealthChat:
                         try:
                             # Open the image from the file path
                             img = Image.open(original_name)
-                            # Convert to RGB if needed (for PNG with transparency)
-                            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                            # Always convert mode 'P' to 'RGB' for JPEG compatibility
+                            if img.mode in ('RGBA', 'LA') or (img.mode == 'P'):
                                 img = img.convert('RGB')
                             # Create temporary file with .jpg extension
                             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp:

@@ -2,13 +2,13 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
 import asyncio
 from pathlib import Path
 import json
 import base64
 from newberryai.virtual_tryon import VirtualTryOn
-from .agent import Agent
+from newberryai.agent import Agent
 
 def compliance_command(args):
     """Handle the compliance subcommand."""
@@ -554,6 +554,148 @@ def img_search_command(args):
     else:
         print("No action specified. Use --build_index, --gradio, or --cli.")
 
+def edi835_command(args):
+    extractor = EDIGenerator(edi_type="835")
+    if args.gradio:
+        print(f"Launching Gradio interface for EDI 835 Generator")
+        extractor.start_gradio()
+    elif args.interactive:
+        extractor.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Generating EDI 835 for document: {args.file_path}")
+        response = extractor.analyze_document(args.file_path)
+        print("\nEDI 835 Output:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def edi837_command(args):
+    extractor = EDIGenerator(edi_type="837")
+    if args.gradio:
+        print(f"Launching Gradio interface for EDI 837 Generator")
+        extractor.start_gradio()
+    elif args.interactive:
+        extractor.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Generating EDI 837 for document: {args.file_path}")
+        response = extractor.analyze_document(args.file_path)
+        print("\nEDI 837 Output:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def edi270_command(args):
+    extractor = EDIGenerator(edi_type="270")
+    if args.gradio:
+        print(f"Launching Gradio interface for EDI 270 Generator")
+        extractor.start_gradio()
+    elif args.interactive:
+        extractor.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Generating EDI 270 for document: {args.file_path}")
+        response = extractor.analyze_document(args.file_path)
+        print("\nEDI 270 Output:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def claim_verifier_command(args):
+    """Handle the medical claim verifier subcommand."""
+    verifier = MedicalClaimVerifier()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Medical Claim Verifier")
+        verifier.start_gradio()
+    elif args.interactive:
+        verifier.run_cli()
+    elif args.file_path:
+        if not os.path.exists(args.file_path):
+            print(f"Error: Document file not found at path: {args.file_path}")
+            sys.exit(1)
+        print(f"Verifying claim from document: {args.file_path}")
+        result = verifier.verify_claim_from_document(args.file_path, args.insurance_provider)
+        print("\nClaim Verification Results:")
+        print(json.dumps(result, indent=2))
+    else:
+        print("Check the argument via --help")
+
+def feature_gpt_summarizer_command(args):
+    """Handle the GPT-5 PDF summarizer subcommand."""
+    summarizer = FeatureGptSummarizer()
+    if args.gradio:
+        print("Launching Gradio interface for GPT-5 PDF Summarizer")
+        summarizer.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for GPT-5 PDF Summarizer")
+        summarizer.run_cli()
+    elif args.file_path:
+        print(f"Analyzing document: {args.file_path}")
+        response = summarizer.ask(args.file_path)
+        print("\nSummary:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def feature_gpt_chat_command(args):
+    """Handle the GPT-5 chat assistant subcommand."""
+    chat = FeatureGptChat()
+    if args.gradio:
+        print("Launching Gradio interface for GPT-5 Chat Assistant")
+        chat.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for GPT-5 Chat Assistant")
+        chat.run_cli()
+    elif args.message:
+        print(f"Message: {args.message}")
+        response = chat.ask(args.message)
+        print("\nResponse:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def feature_gpt_image_command(args):
+    """Handle the GPT-5 image analysis subcommand."""
+    image = FeatureGptImage()
+    if args.gradio:
+        print("Launching Gradio interface for GPT-5 Image Analyzer")
+        image.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for GPT-5 Image Analyzer")
+        image.run_cli()
+    elif args.file_path:
+        print(f"Analyzing image: {args.file_path}")
+        response = image.ask(args.file_path)
+        print("\nImage Analysis:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
+def feature_gpt_agent_command(args):
+    """Handle the GPT-5 agent subcommand."""
+    agent = FeatureGptAgent()
+    if args.gradio:
+        print("Launching Gradio interface for GPT-5 Agent")
+        agent.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for GPT-5 Agent")
+        agent.run_cli()
+    elif args.instruction:
+        print(f"Instruction: {args.instruction}")
+        response = agent.ask(args.instruction)
+        print("\nAgent Response:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -771,6 +913,63 @@ def main():
     img_search_parser.add_argument('--gradio', action='store_true', help='Launch Gradio UI')
     img_search_parser.add_argument('--cli', action='store_true', help='Run CLI')
     img_search_parser.set_defaults(func=img_search_command)
+
+    # EDI 835 Command
+    edi835_parser = subparsers.add_parser('edi835', help='Generate EDI 835 from medical documents')
+    edi835_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
+    edi835_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    edi835_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    edi835_parser.set_defaults(func=edi835_command)
+
+    # EDI 837 Command
+    edi837_parser = subparsers.add_parser('edi837', help='Generate EDI 837 from medical documents')
+    edi837_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
+    edi837_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    edi837_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    edi837_parser.set_defaults(func=edi837_command)
+
+    # EDI 270 Command
+    edi270_parser = subparsers.add_parser('edi270', help='Generate EDI 270 from medical documents')
+    edi270_parser.add_argument("--file_path", "-fp", type=str, help="Path to a document to analyze")
+    edi270_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    edi270_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    edi270_parser.set_defaults(func=edi270_command)
+
+    # Medical Claim Verifier Command
+    claim_verifier_parser = subparsers.add_parser('claim_verifier', help='Verify medical claims and predict approval likelihood')
+    claim_verifier_parser.add_argument("--file_path", "-fp", type=str, help="Path to a medical document to verify")
+    claim_verifier_parser.add_argument("--insurance_provider", "-ip", type=str, help="Insurance provider name for specific analysis")
+    claim_verifier_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    claim_verifier_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    claim_verifier_parser.set_defaults(func=claim_verifier_command)
+
+    # Feature GPT-5 Summarizer Command
+    feature_gpt5_summarizer_parser = subparsers.add_parser('feature_gpt5_summarizer', help='Extract and summarize content from PDF documents using GPT-5')
+    feature_gpt5_summarizer_parser.add_argument("--file_path", "-f", type=str, help="Path to the PDF document to analyze")
+    feature_gpt5_summarizer_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_summarizer_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_summarizer_parser.set_defaults(func=feature_gpt_summarizer_command)
+
+    # Feature GPT-5 Chat Assistant Command
+    feature_gpt5_chat_parser = subparsers.add_parser('feature_gpt5_chat', help='Chat with GPT-5 AI assistant')
+    feature_gpt5_chat_parser.add_argument("--message", "-m", type=str, help="Message to send to the chat assistant")
+    feature_gpt5_chat_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_chat_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_chat_parser.set_defaults(func=feature_gpt_chat_command)
+
+    # Feature GPT-5 Image Analyzer Command
+    feature_gpt5_image_parser = subparsers.add_parser('feature_gpt5_image', help='Analyze images using GPT-5')
+    feature_gpt5_image_parser.add_argument("--file_path", "-f", type=str, help="Path to the image file to analyze")
+    feature_gpt5_image_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_image_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_image_parser.set_defaults(func=feature_gpt_image_command)
+
+    # Feature GPT-5 Agent Command (already implemented handler: feature_gpt5_agent_command)
+    feature_gpt5_agent_parser = subparsers.add_parser('feature_gpt5_agent', help='Use GPT-5 as an advanced agent for reasoning and tasks')
+    feature_gpt5_agent_parser.add_argument("--instruction", "-i", type=str, help="Instruction or question for the agent")
+    feature_gpt5_agent_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    feature_gpt5_agent_parser.add_argument("--interactive", "-I", action="store_true", help="Run in interactive CLI mode")
+    feature_gpt5_agent_parser.set_defaults(func=feature_gpt_agent_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
