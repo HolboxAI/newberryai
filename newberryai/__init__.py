@@ -19,3 +19,5 @@ from .face_detection import FaceDetection
 from .virtual_tryon import VirtualTryOn
 from .agent import Agent
 from .function_registry import FunctionRegistry
+from .handwritten2text import Handwrite2Text
+from .img_search import ImageSearch
