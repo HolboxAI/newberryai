@@ -60,6 +60,8 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 - **HealthScribe**: Medical transcription with AWS HealthScribe
 - **Differential Diagnosis Assistant(DDX)**: Clinical diagnosis support
 - **Medical Bill Extractor**: Automated medical billing analysis
+- **EDI 835 Generator**: Generate EDI 835 files from medical documents
+- **MedicalClaimVerifier**:Predicts insurance claim approval likelihood from medical documents 
 
 ### 🔒 Compliance & Security
 - **Compliance Checker**: Video analysis for regulatory compliance
@@ -214,9 +216,9 @@ print(response)
 
 ### CLI Usage
 ```sh
-newberryai excel --question "Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
-newberryai excel --interactive
-newberryai excel --gradio
+newberryai ExcelO --Excel_query "Calculate average sales for products that meet specific criteria E.g: give me excel formula to calculate average of my sale for year 2010,2011 sales is in col A, Year in Col B  and Months in Col C"
+newberryai ExcelO --interactive
+newberryai ExcelO --gradio
 ```
 
 ---
@@ -244,9 +246,9 @@ print(analysis)
 
 ### CLI Usage
 ```sh
-newberryai bill --file_path Billimg.jpg
-newberryai bill --interactive
-newberryai bill --gradio
+newberryai bill_extract --file_path Billimg.jpg
+newberryai bill_extract --interactive
+newberryai bill_extract --gradio
 ```
 
 ---
@@ -281,20 +283,21 @@ print(response)
 
 ### CLI Usage
 ```sh
-newberryai code --question "Explain and correct below code
+newberryai Coder --code_query "Explain and correct below code
+
 def calculate_average(nums):
-sum = 0
-for num in nums:
-sum += num
-average = sum / len(nums)
-return average
+    sum = 0
+    for num in nums:
+        sum += num
+    average = sum / len(nums)
+    return average
 
 numbers = [10, 20, 30, 40, 50]
 result = calculate_average(numbers)
 print(\"The average is:\", results)"
 
-newberryai code --interactive
-newberryai code --gradio
+newberryai Coder --interactive
+newberryai Coder --gradio
 ```
 
 ---
@@ -319,9 +322,9 @@ print(response)
 
 ### CLI Usage
 ```sh
-newberryai pii --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
-newberryai pii --interactive
-newberryai pii --gradio
+newberryai PII_Red --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
+newberryai PII_Red --interactive
+newberryai PII_Red --gradio
 ```
 
 ---
@@ -346,9 +349,9 @@ print(response)
 
 ### CLI Usage
 ```sh
-newberryai pii --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
-newberryai pii --interactive
-newberryai pii --gradio
+newberryai PII_extract --text "Patient name is John Doe with fever. he is from Austin,Texas.His email id is john.doe14@email.com"
+newberryai PII_extract --interactive
+newberryai PII_extract --gradio
 ```
 
 ---
@@ -363,7 +366,7 @@ OPENAI_API_KEY=your_openai_api_key
 
 ### Python SDK
 ```python
-#Perform detailed data exploration with real statistics, hypothesis testing, and actionable insights—no code, just direct analysis
+# Perform detailed data exploration with real statistics, hypothesis testing, actionable insights, and visualizations—no code, just direct analysis
 
 from newberryai import EDA
 import pandas as pd
@@ -371,8 +374,21 @@ import pandas as pd
 eda = EDA()
 eda.current_data = pd.read_csv(r'your_csv.csv')
 
+# Ask questions about your data
 response = eda.ask("What is the average value of column 'xyz'?")
 print(response)
+
+# Generate visualizations (distribution, correlation, categorical, time series)
+# Show all visualizations:
+eda.visualize_data()
+# Show only distribution plots:
+eda.visualize_data(plot_type="dist")
+# Show only correlation heatmap:
+eda.visualize_data(plot_type="corr")
+# Show only categorical plots:
+eda.visualize_data(plot_type="cat")
+# Show only time series plots:
+eda.visualize_data(plot_type="time")
 ```
 
 ### CLI Usage
@@ -380,6 +396,13 @@ print(response)
 newberryai eda --file_path your_csv.csv --question "What is the average value of column 'target'?"
 newberryai eda --interactive
 newberryai eda --gradio
+
+# Visualization commands (in interactive CLI):
+#   visualize or viz           # Show all visualizations
+#   visualize dist or viz dist # Show distribution plots
+#   visualize corr or viz corr # Show correlation heatmap
+#   visualize cat or viz cat   # Show categorical plots
+#   visualize time or viz time # Show time series plots
 ```
 
 ---
@@ -404,9 +427,9 @@ print(response)
 
 ### CLI Usage
 ```sh
-newberryai doc --file_path YOUR-pdf.pdf --question "Extract and summarize content from PDF documents."
-newberryai doc --interactive
-newberryai doc --gradio
+newberryai pdf_summarizer --file_path YOUR-pdf.pdf
+newberryai pdf_summarizer --interactive
+newberryai pdf_summarizer --gradio
 ```
 
 ---
@@ -441,9 +464,9 @@ await pdf_extract_demo()
 
 ### CLI Usage
 ```sh
-newberryai pdf --file_path YOUR-pdf.pdf --question "What is the mode of review in the document?"
-newberryai pdf --interactive
-newberryai pdf --gradio
+newberryai pdf_extract --file_path YOUR-pdf.pdf --question "What is the mode of review in the document?"
+newberryai pdf_extract --interactive
+newberryai pdf_extract --gradio
 ```
 
 ---
@@ -484,7 +507,7 @@ await run_video()
 
 ### CLI Usage
 ```sh
-newberryai video --text "A cat dancing on a wall" --duration_seconds 6 --fps 24 --dimension 1280x720 --seed 42
+newberryai video --text "A cat dancing on a wall" --duration 6 --fps 24 --dimension 1280x720 --seed 42
 newberryai video --interactive
 newberryai video --gradio
 ```
@@ -565,10 +588,10 @@ if recognize_response["success"]:
 
 ### CLI Usage
 ```sh
-newberryai face --image_path yourimg.jpeg --name Name
-newberryai face --image_path yourimg2.jpeg --recognize
-newberryai face --interactive
-newberryai face --gradio
+newberryai face_recognig --image_path yourimg.jpeg --add --name Name
+newberryai face_recognig --image_path yourimg2.jpeg
+newberryai face_recognig --interactive
+newberryai face_recognig --gradio
 ```
 
 ---
@@ -610,10 +633,10 @@ for detection in results:
 
 ### CLI Usage
 ```sh
-newberryai face --image_path yourimg.jpeg --add_to_collection
-newberryai face --video_path yourvideo.mp4 --max_frames 20
-newberryai face --interactive
-newberryai face --gradio
+newberryai face_detect --add_image yourimg.jpeg --name kirti
+newberryai face_detect --video_path yourvideo.mp4 --max_frames 20
+newberryai face_detect --interactive
+newberryai face_detect --gradio
 ```
 
 ---
@@ -666,9 +689,9 @@ else:
 
 ### CLI Usage
 ```sh
-newberryai sql --question "Show all tables"
-newberryai sql --interactive
-newberryai sql --gradio
+newberryai nl2sql --question "Show all tables" --user user-name --password passward --database your-database-name
+newberryai nl2sql --interactive
+newberryai nl2sql --gradio
 ```
 
 ---
@@ -774,8 +797,8 @@ print(extracted_text)
 
 ### CLI Usage
 ```sh
-newberryai handwritten2text --file_path handwritten_note.jpg
-newberryai handwritten2text --gradio
+newberryai handwrite2text --file_path handwritten_note.jpg
+newberryai handwrite2text --gradio
 ```
 
 ---
@@ -831,3 +854,175 @@ newberryai img_search --s3_bucket your-bucket-name --gradio
 ```
 
 **Note:** You must upload your images to S3 before building the index. The tool does not upload images for you.
+
+---
+
+## 21. EDI Generator
+
+NewberryAI supports generating three major EDI formats from medical documents:
+- **EDI 835**: Electronic Remittance Advice (payment/remittance details)
+- **EDI 837**: Health Care Claim (claim submission)
+- **EDI 270**: Eligibility Inquiry (insurance eligibility check)
+
+You can generate any of these by selecting the appropriate extractor or CLI command.
+
+### Environment Setup
+```bash
+# AWS Credentials (required for Bedrock/Claude model)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+from newberryai import EDIGenerator
+
+# EDI 835: Remittance Advice
+era = EDIGenerator("835")
+edi_835_output = era.analyze_document('your_medical_bill_or_remittance.pdf')
+print(edi_835_output)
+
+# EDI 837: Health Care Claim
+claim = EDIGenerator("837")
+edi_837_output = claim.analyze_document('your_medical_visit_summary.pdf')
+print(edi_837_output)
+
+# EDI 270: Eligibility Inquiry
+elig = EDIGenerator("270")
+edi_270_output = elig.analyze_document('your_patient_insurance_details.pdf')
+print(edi_270_output)
+```
+
+### CLI Usage
+```sh
+# EDI 835 (Remittance Advice)
+newberryai edi835 --file_path your_medical_bill_or_remittance.pdf
+newberryai edi835 --interactive
+newberryai edi835 --gradio
+
+# EDI 837 (Health Care Claim)
+newberryai edi837 --file_path your_medical_visit_summary.pdf
+newberryai edi837 --interactive
+newberryai edi837 --gradio
+
+# EDI 270 (Eligibility Inquiry)
+newberryai edi270 --file_path your_patient_insurance_details.pdf
+newberryai edi270 --interactive
+newberryai edi270 --gradio
+```
+
+- Upload a relevant medical document (image or PDF).
+- The AI will extract required data and generate a valid EDI file as plain text (no JSON, no markdown).
+- If required data is missing, placeholder values will be used in the EDI output.
+- Output is ready to save as `.edi` or `.txt`.
+
+---
+## 22. Medical Claim Verifier
+
+### Environment Setup
+```bash
+# OpenAI Configuration (for LLM-powered analysis)
+OPENAI_API_KEY=your_openai_api_key
+# AWS Credentials (for EDI generation and document processing)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+from newberryai import MedicalClaimVerifier
+
+# Initialize the verifier
+verifier = MedicalClaimVerifier()
+
+# Verify a claim from a medical document (PDF/Image/Text)
+# When to use:
+# - A patient brings in a medical bill from another provider
+# - You have scanned medical documents
+# - You want to verify claims before submitting to insurance
+
+result = verifier.verify_claim_from_document(
+    file_path='your_claim_document.pdf', 
+    insurance_provider='Blue Cross Blue Shield'
+)
+
+# Get results
+print(f"Approval Likelihood: {result['approval_prediction']['likelihood']}")
+print(f"Risk Factors: {result['risk_factors']}")
+print(f"Recommendations: {result['recommendations']}")
+```
+
+
+
+### CLI Usage
+```sh
+# Verify a claim from a document
+newberryai claim_verifier --file_path your_claim_document.pdf --insurance_provider "Blue Cross Blue Shield"
+
+# Launch Gradio interface
+newberryai claim_verifier --gradio
+
+# Run in interactive CLI mode
+newberryai claim_verifier --interactive
+```
+
+---
+## 23. GPT Features
+
+#### Environment Setup
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+```python
+# Feature GPT-5 Summarizer
+from newberryai import FeatureGptSummarizer
+summarizer = FeatureGptSummarizer()
+summary = summarizer.ask(file_path="path_to_your_pdf_document.pdf")
+print(summary)
+
+# Feature GPT-5 Chat Assistant
+from newberryai import FeatureGptChat
+chat_assistant = FeatureGptChat()
+response = chat_assistant.ask("Hello! How can I assist you today?")
+print(response)
+
+# Feature GPT-5 Image Analyzer
+from newberryai import FeatureGptImage
+image_analyzer = FeatureGptImage()
+response = image_analyzer.ask(file_path="path_to_your_image.jpg")
+print(response)
+
+# Feature GPT-5 Agent
+from newberryai import FeatureGptAgent
+agent = FeatureGptAgent()
+response = agent.ask("Solve this problem: 12 * 15")
+print(response)
+```
+
+### CLI Usage
+```sh
+# Feature GPT-5 Summarizer
+newberryai feature_gpt5_summarizer --file_path YOUR_DOCUMENT.pdf --gradio
+newberryai feature_gpt5_summarizer --interactive
+
+# Feature GPT-5 Chat Assistant
+newberryai feature_gpt5_chat --message "Hello, assistant!" --gradio
+newberryai feature_gpt5_chat --interactive
+
+# Feature GPT-5 Image Analyzer
+newberryai feature_gpt5_image --file_path YOUR_IMAGE.png --gradio
+newberryai feature_gpt5_image --interactive
+
+# Feature GPT-5 Agent
+newberryai feature_gpt5_agent --instruction "Solve this math problem: 12 * 15" --gradio
+newberryai feature_gpt5_agent --interactive
+
+```

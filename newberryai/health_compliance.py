@@ -152,7 +152,6 @@ class ClaudeAnalyzer:
                     }
                 time.sleep(2**retry_count)  # Wait before retrying
 
-
 class ComplianceChecker:
     """Main class for checking video compliance using Claude."""
     
