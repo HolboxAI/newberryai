@@ -150,8 +150,7 @@ class ClaudeAnalyzer:
                         "combined_analysis": f"Error analyzing frames after {max_retries} attempts: {str(e)}",
                         "compliant": False
                     }
-                time.sleep(2**max_retries)  # Wait before retrying
-
+                time.sleep(2**retry_count)  # Wait before retrying
 
 class ComplianceChecker:
     """Main class for checking video compliance using Claude."""
