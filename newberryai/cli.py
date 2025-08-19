@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, GptAgent, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
 import asyncio
 from pathlib import Path
 import json

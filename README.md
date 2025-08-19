@@ -969,7 +969,7 @@ newberryai claim_verifier --interactive
 ```
 
 ---
-## 23 GPT Features
+## 23. GPT Features
 
 #### Environment Setup
 
