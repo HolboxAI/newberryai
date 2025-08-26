@@ -1035,6 +1035,9 @@ newberryai feature_gpt5_agent --interactive
 ```bash
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
 ```
 
 ### Python SDK
@@ -1049,13 +1052,6 @@ coder = MedicalCoder()
 response = coder.ask('path/to/medical_document.pdf')
 print(response)
 
-# The response will be in JSON format with:
-# - diagnosis: Medical diagnosis
-# - icd10_code: ICD-10 code
-# - icd10_description: Description of the ICD-10 code
-# - procedure: Medical procedure
-# - cpt_code: CPT code
-# - cpt_description: Description of the CPT code
 ```
 
 ### CLI Usage
@@ -1077,3 +1073,4 @@ newberryai medical_coding --interactive
 - **Safety First**: Uses "Needs human review" for uncertain cases instead of guessing
 - **JSON Output**: Structured output format for easy integration
 - **Document Support**: Works with medical bills, doctor's notes, and clinical documents
+
