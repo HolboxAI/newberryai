@@ -24,3 +24,4 @@ from .img_search import ImageSearch
 from .EDI import EDIGenerator
 from .MedicalClaimVerifier import MedicalClaimVerifier
 from .features_gpt5 import FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent
+from .Medical_coding import MedicalCoder

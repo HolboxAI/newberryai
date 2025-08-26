@@ -2,7 +2,7 @@ import argparse
 import sys
 import os 
 import pandas as pd
-from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent)
+from newberryai import (ComplianceChecker, HealthScribe, DDxChat, Bill_extractor, ExcelExp, CodeReviewAssistant, RealtimeApp, PII_Redaction, PII_extraction, DocSummarizer, EDA, VideoGenerator, ImageGenerator, FaceRecognition, NL2SQL, PDFExtractor, FaceDetection,Handwrite2Text, ImageSearch, EDIGenerator, MedicalClaimVerifier, FeatureGptSummarizer, FeatureGptChat, FeatureGptImage, FeatureGptAgent, MedicalCoder)
 import asyncio
 from pathlib import Path
 import json
@@ -696,6 +696,30 @@ def feature_gpt_agent_command(args):
     else:
         print("Check the argument via --help")
 
+def medical_coding_command(args):
+    """Handle the medical coding subcommand."""
+    coder = MedicalCoder()
+    
+    if args.gradio:
+        print("Launching Gradio interface for Medical Coding")
+        coder.start_gradio()
+    elif args.interactive:
+        print("Starting interactive session for Medical Coding")
+        coder.run_cli()
+    elif args.file_path:
+        # Validate that the file exists
+        if not os.path.exists(args.file_path):
+            print(f"Error: Medical document file not found at path: {args.file_path}")
+            sys.exit(1)
+        
+        print(f"Analyzing medical document: {args.file_path}")
+        response = coder.ask(args.file_path)
+        
+        print("\nMedical Codes:")
+        print(response)
+    else:
+        print("Check the argument via --help")
+
 def main():
     """Command line interface for NewberryAI tools."""
     parser = argparse.ArgumentParser(description='NewberryAI - AI Powered tools using LLMs ')
@@ -970,6 +994,13 @@ def main():
     feature_gpt5_agent_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
     feature_gpt5_agent_parser.add_argument("--interactive", "-I", action="store_true", help="Run in interactive CLI mode")
     feature_gpt5_agent_parser.set_defaults(func=feature_gpt_agent_command)
+
+    # Medical Coding Command
+    medical_coding_parser = subparsers.add_parser('medical_coding', help='Extract ICD-10 and CPT codes from medical documents')
+    medical_coding_parser.add_argument("--file_path", "-f", type=str, help="Path to the medical document to analyze")
+    medical_coding_parser.add_argument("--gradio", "-g", action="store_true", help="Launch Gradio interface")
+    medical_coding_parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive CLI mode")
+    medical_coding_parser.set_defaults(func=medical_coding_command)
 
     # Parse arguments and call the appropriate function
     args = parser.parse_args()
