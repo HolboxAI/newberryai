@@ -60,7 +60,8 @@ pip install PyAudio‑0.2.11‑cp312‑cp312‑win_amd64.whl
 - **HealthScribe**: Medical transcription with AWS HealthScribe
 - **Differential Diagnosis Assistant(DDX)**: Clinical diagnosis support
 - **Medical Bill Extractor**: Automated medical billing analysis
-- **EDI 835 Generator**: Generate EDI 835 files from medical documents
+- **EDI Generator**: Generate EDI 835/837/270 files from medical documents
+- **Medical Coding**: ICD-10 and CPT coding assistant
 - **MedicalClaimVerifier**:Predicts insurance claim approval likelihood from medical documents 
 
 ### 🔒 Compliance & Security
@@ -1026,3 +1027,50 @@ newberryai feature_gpt5_agent --instruction "Solve this math problem: 12 * 15" -
 newberryai feature_gpt5_agent --interactive
 
 ```
+
+---
+## 24. Medical Coding
+
+### Environment Setup
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=us-east-1
+```
+
+### Python SDK
+```python
+# Extract ICD-10 and CPT codes from medical documents and bills.
+from newberryai import MedicalCoder
+
+# Initialize the medical coder
+coder = MedicalCoder()
+
+# Extract medical codes from a document
+response = coder.ask('path/to/medical_document.pdf')
+print(response)
+
+```
+
+### CLI Usage
+```sh
+# Extract medical codes from a document
+newberryai medical_coding --file_path medical_document.pdf
+
+# Launch Gradio interface
+newberryai medical_coding --gradio
+
+# Run in interactive CLI mode
+newberryai medical_coding --interactive
+```
+
+**Features:**
+- **ICD-10 Coding**: Automatically maps diagnoses to ICD-10 codes with descriptions
+- **CPT Coding**: Maps procedures and services to CPT codes with descriptions
+- **Multiple Codes**: Handles multiple diagnoses and procedures in a single document
+- **Safety First**: Uses "Needs human review" for uncertain cases instead of guessing
+- **JSON Output**: Structured output format for easy integration
+- **Document Support**: Works with medical bills, doctor's notes, and clinical documents
+
